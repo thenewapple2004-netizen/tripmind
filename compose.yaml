@@ -1,0 +1,5 @@
+services:
+  trip-service:
+    build: ./services/trip-service
+    ports:
+      - "8001:8000"
