@@ -1,5 +1,6 @@
 import pytest
 from datetime import date
+from decimal import Decimal
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -7,8 +8,9 @@ from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from app.core.database import Base, get_db
+from app.models.trip import Trip
 
-# Use in-memory SQLite for fast, isolated, reliable test runs
+# Isolated in-memory SQLite for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
@@ -21,6 +23,7 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="function")
 def db_session():
+    """Provides a clean transactional database session per test, dropping tables after."""
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
@@ -32,6 +35,7 @@ def db_session():
 
 @pytest.fixture(scope="function")
 def client(db_session):
+    """FastAPI TestClient wired to the test db_session."""
     def override_get_db():
         try:
             yield db_session
@@ -44,10 +48,87 @@ def client(db_session):
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(scope="function")
+def sample_trip(db_session):
+    """Pytest fixture: Creates a temporary sample trip and cleans it up after the test."""
+    trip = Trip(
+        title="Patagonia Hiking",
+        destination="El Chalten, Argentina",
+        start_date=date(2027, 1, 5),
+        end_date=date(2027, 1, 18),
+        budget=Decimal("4100.00"),
+    )
+    db_session.add(trip)
+    db_session.commit()
+    db_session.refresh(trip)
+
+    yield trip
+
+    # Teardown / cleanup
+    existing = db_session.query(Trip).filter(Trip.id == trip.id).first()
+    if existing:
+        db_session.delete(existing)
+        db_session.commit()
+
+
+@pytest.fixture(scope="function")
+def multiple_trips(db_session):
+    """Pytest fixture: Seeds multiple temporary trips for list testing and cleans them up."""
+    trips_data = [
+        Trip(
+            title="Iceland Aurora Hunt",
+            destination="Reykjavik, Iceland",
+            start_date=date(2026, 11, 10),
+            end_date=date(2026, 11, 18),
+            budget=Decimal("3800.00"),
+        ),
+        Trip(
+            title="Moroccan Desert Trek",
+            destination="Marrakech, Morocco",
+            start_date=date(2027, 3, 1),
+            end_date=date(2027, 3, 10),
+            budget=Decimal("2900.00"),
+        ),
+    ]
+    for trip in trips_data:
+        db_session.add(trip)
+    db_session.commit()
+
+    yield trips_data
+
+    # Teardown / cleanup
+    for trip in trips_data:
+        existing = db_session.query(Trip).filter(Trip.id == trip.id).first()
+        if existing:
+            db_session.delete(existing)
+    db_session.commit()
+
+
 def test_health_check(client):
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy", "service": "Trip Service"}
+
+
+def test_get_sample_trip_via_fixture(client, sample_trip):
+    """Verify that a trip pre-seeded by a pytest fixture is retrieved properly."""
+    res = client.get(f"/api/v1/trips/{sample_trip.id}")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["id"] == str(sample_trip.id)
+    assert data["title"] == "Patagonia Hiking"
+    assert data["destination"] == "El Chalten, Argentina"
+
+
+def test_get_multiple_trips_via_fixture(client, multiple_trips):
+    """Verify that multiple seeded fixture trips are returned in list endpoint."""
+    res = client.get("/api/v1/trips")
+    assert res.status_code == 200
+    trips = res.json()
+    assert len(trips) == 2
+    titles = [t["title"] for t in trips]
+    assert "Iceland Aurora Hunt" in titles
+    assert "Moroccan Desert Trek" in titles
 
 
 def test_create_and_get_trip(client):
@@ -69,47 +150,22 @@ def test_create_and_get_trip(client):
     assert get_res.status_code == 200
     assert get_res.json()["destination"] == "Kyoto, Japan"
 
-    all_res = client.get("/api/v1/trips")
-    assert all_res.status_code == 200
-    assert len(all_res.json()) == 1
 
-
-def test_update_trip(client):
-    payload = {
-        "title": "Swiss Alps",
-        "destination": "Zermatt, Switzerland",
-        "start_date": "2026-12-15",
-        "end_date": "2026-12-24",
-        "budget": 4500.0,
-    }
-    create_res = client.post("/api/v1/trips", json=payload)
-    trip_id = create_res.json()["id"]
-
-    patch_res = client.patch(f"/api/v1/trips/{trip_id}", json={"budget": 5200.0})
+def test_update_trip_using_fixture(client, sample_trip):
+    patch_res = client.patch(f"/api/v1/trips/{sample_trip.id}", json={"budget": 5200.0})
     assert patch_res.status_code == 200
     assert patch_res.json()["budget"] == 5200.0
 
 
-def test_delete_trip(client):
-    payload = {
-        "title": "Road to Rome",
-        "destination": "Rome, Italy",
-        "start_date": "2026-09-01",
-        "end_date": "2026-09-07",
-        "budget": 1800.0,
-    }
-    create_res = client.post("/api/v1/trips", json=payload)
-    trip_id = create_res.json()["id"]
-
-    del_res = client.delete(f"/api/v1/trips/{trip_id}")
+def test_delete_trip_using_fixture(client, sample_trip):
+    del_res = client.delete(f"/api/v1/trips/{sample_trip.id}")
     assert del_res.status_code == 204
 
-    get_res = client.get(f"/api/v1/trips/{trip_id}")
+    get_res = client.get(f"/api/v1/trips/{sample_trip.id}")
     assert get_res.status_code == 404
 
 
 def test_validation_errors(client):
-    # End date before start date
     invalid_dates = {
         "title": "Invalid Trip",
         "destination": "Nowhere",
@@ -120,7 +176,6 @@ def test_validation_errors(client):
     res = client.post("/api/v1/trips", json=invalid_dates)
     assert res.status_code == 422
 
-    # Negative budget
     invalid_budget = {
         "title": "Invalid Budget",
         "destination": "Nowhere",
