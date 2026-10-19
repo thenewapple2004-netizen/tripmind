@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 from uuid import UUID
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class TripBase(BaseModel):
@@ -37,7 +37,5 @@ class TripUpdate(BaseModel):
 
 
 class TripResponse(TripBase):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID
-
-    class Config:
-        from_attributes = True

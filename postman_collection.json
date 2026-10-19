@@ -1,0 +1,156 @@
+{
+  "info": {
+    "name": "TripMind - Trip Service",
+    "description": "API collection for TripMind Trip Service microservice",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8001",
+      "type": "string"
+    },
+    {
+      "key": "tripId",
+      "value": "69a69614-220b-4563-b242-88f06c8ba594",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Trips",
+      "item": [
+        {
+          "name": "1. Create Trip",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set('tripId', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Swiss Winter Adventure\",\n  \"destination\": \"Interlaken, Switzerland\",\n  \"start_date\": \"2026-12-01\",\n  \"end_date\": \"2026-12-10\",\n  \"budget\": 4200.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trips",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "trips"]
+            }
+          }
+        },
+        {
+          "name": "2. Get All Trips",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trips",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "trips"]
+            }
+          }
+        },
+        {
+          "name": "3. Get Trip By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trips/{{tripId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "trips", "{{tripId}}"]
+            }
+          }
+        },
+        {
+          "name": "4. Update Trip (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"budget\": 4800.00,\n  \"title\": \"Swiss Winter Adventure - Upgraded\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trips/{{tripId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "trips", "{{tripId}}"]
+            }
+          }
+        },
+        {
+          "name": "5. Delete Trip",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trips/{{tripId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "trips", "{{tripId}}"]
+            }
+          }
+        },
+        {
+          "name": "6. Validation Error Test (Invalid Date)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Invalid Trip\",\n  \"destination\": \"Nowhere\",\n  \"start_date\": \"2026-12-10\",\n  \"end_date\": \"2026-12-01\",\n  \"budget\": 1000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trips",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "trips"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
