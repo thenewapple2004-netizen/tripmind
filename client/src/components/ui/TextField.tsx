@@ -1,5 +1,5 @@
-import { useId, type ComponentProps, type ReactNode } from 'react'
-import { CircleAlert } from 'lucide-react'
+import { useId, useState, type ComponentProps, type ReactNode } from 'react'
+import { CircleAlert, Eye, EyeOff } from 'lucide-react'
 import { cn } from './cn'
 
 const inputBase =
@@ -19,6 +19,8 @@ interface TextFieldProps extends Omit<ComponentProps<'input'>, 'id'> {
   icon?: ReactNode
   /** Short text such as a currency symbol shown inside the left edge. */
   prefix?: string
+  /** Adds a toggle button to show/hide password text */
+  showPasswordToggle?: boolean
 }
 
 export function TextField({
@@ -28,12 +30,17 @@ export function TextField({
   icon,
   prefix,
   className,
+  type = 'text',
+  showPasswordToggle = false,
   ref,
   ...props
 }: TextFieldProps) {
   const id = useId()
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined
   const hasLeading = Boolean(icon || prefix)
+  const [showPassword, setShowPassword] = useState(false)
+
+  const inputType = showPasswordToggle ? (showPassword ? 'text' : 'password') : type
 
   return (
     <div className={className}>
@@ -52,14 +59,26 @@ export function TextField({
         <input
           id={id}
           ref={ref}
+          type={inputType}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={cn(
             error ? inputErrorStyles : inputStyles,
             hasLeading && 'pl-9',
+            showPasswordToggle && 'pr-10',
           )}
           {...props}
         />
+        {showPasswordToggle && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            className="absolute inset-y-0 right-2 flex items-center justify-center p-1.5 text-fg-subtle hover:text-fg focus:outline-none"
+          >
+            {showPassword ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
+          </button>
+        )}
       </div>
       {error ? (
         <p id={`${id}-error`} className="mt-1.5 flex items-start gap-1.5 text-sm text-danger">

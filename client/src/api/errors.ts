@@ -13,9 +13,9 @@ interface FastApiIssue {
 export class ApiError extends Error {
   readonly kind: ApiErrorKind
   readonly status: number | null
-  /** Per-field problems from a 422, keyed by the API's field name. */
+  /** Per-field problems from a 422 or 400, keyed by the API's field name. */
   readonly fieldErrors: FieldErrors
-  /** Problems that don't belong to a single field (e.g. the date-range rule). */
+  /** Problems that don't belong to a single field. */
   readonly formErrors: string[]
 
   constructor(
@@ -35,7 +35,6 @@ export class ApiError extends Error {
     this.formErrors = options.formErrors ?? []
   }
 
-  /** True when retrying the same request might succeed (outage, timeout, 5xx). */
   get isTransient(): boolean {
     return this.kind !== 'http' || (this.status !== null && this.status >= 500)
   }
@@ -46,21 +45,21 @@ export class ApiError extends Error {
 
   static network(): ApiError {
     return new ApiError(
-      "Can't reach the Trip Service. Check your connection and that the service is running.",
+      "Can't reach the server. Check your connection and that the services are running.",
       { kind: 'network' },
     )
   }
 
   static timeout(): ApiError {
-    return new ApiError('The Trip Service took too long to respond. Please try again.', {
+    return new ApiError('The server took too long to respond. Please try again.', {
       kind: 'timeout',
     })
   }
 
-  /** Builds an error from a non-2xx response and its (possibly missing) JSON body. */
   static fromResponse(status: number, body: unknown): ApiError {
     const detail = (body as { detail?: unknown } | null)?.detail
 
+    // Handle 422 Pydantic validation issues
     if (Array.isArray(detail)) {
       const { fieldErrors, formErrors } = parseValidationIssues(detail as FastApiIssue[])
       const hasFieldErrors = Object.keys(fieldErrors).length > 0
@@ -70,8 +69,8 @@ export class ApiError extends Error {
       return new ApiError(message, { kind: 'http', status, fieldErrors, formErrors })
     }
 
+    // Handle string detail (e.g. 400 Bad Request, 404, or custom detail)
     if (typeof detail === 'string' && detail && status < 500) {
-      // PATCH reports the date-range rule as a plain 400 string rather than a 422 list.
       const field = fieldNamedIn(detail)
       if (field) {
         const message = friendlyText(detail)
@@ -86,23 +85,26 @@ export class ApiError extends Error {
         status,
       })
     }
+
     if (status === 502 || status === 503 || status === 504) {
       return new ApiError(
-        'The Trip Service is unavailable right now. Make sure it is running and try again.',
+        'The server is unavailable right now. Make sure it is running and try again.',
         { kind: 'http', status },
       )
     }
+
     if (status >= 500) {
-      return new ApiError('The Trip Service ran into a problem. Please try again in a moment.', {
+      return new ApiError('The server ran into a problem. Please try again in a moment.', {
         kind: 'http',
         status,
       })
     }
+
     return new ApiError(`Something went wrong (HTTP ${status}).`, { kind: 'http', status })
   }
 }
 
-const FIELD_NAMES = ['title', 'destination', 'start_date', 'end_date', 'budget']
+const FIELD_NAMES = ['title', 'destination', 'start_date', 'end_date', 'budget', 'email', 'password']
 
 function parseValidationIssues(issues: FastApiIssue[]) {
   const fieldErrors: FieldErrors = {}
@@ -114,13 +116,10 @@ function parseValidationIssues(issues: FastApiIssue[]) {
     const field = loc[0] === 'body' && typeof loc[1] === 'string' ? loc[1] : null
 
     if (field) {
-      // Keep the first message per field; it is the most relevant one.
       fieldErrors[field] ??= message
       continue
     }
 
-    // Model-level validators (e.g. the date range rule) report loc ["body"].
-    // If the message names a field, attach it there so it shows up inline.
     const named = fieldNamedIn(issue.msg ?? '')
     if (named) fieldErrors[named] ??= message
     else formErrors.push(message)
@@ -129,11 +128,14 @@ function parseValidationIssues(issues: FastApiIssue[]) {
   return { fieldErrors, formErrors }
 }
 
-/** The field a free-text message is about: whichever field name appears first in it. */
 function fieldNamedIn(text: string): string | null {
+  const lower = text.toLowerCase()
+  if (lower.includes('email')) return 'email'
+  if (lower.includes('password')) return 'password'
+
   let best: { name: string; index: number } | null = null
   for (const name of FIELD_NAMES) {
-    const index = text.indexOf(name)
+    const index = lower.indexOf(name)
     if (index !== -1 && (best === null || index < best.index)) best = { name, index }
   }
   return best?.name ?? null

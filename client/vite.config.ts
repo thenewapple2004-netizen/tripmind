@@ -3,11 +3,10 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// The browser only ever talks to this dev server. Requests under /api are
-// forwarded to the Trip Service, so no CORS configuration is needed.
-//   - Docker Compose sets API_PROXY_TARGET=http://trip-service:8000
-//   - Running `npm run dev` on the host falls back to the published port.
+// The browser only ever talks to this dev server. Requests under /api/v1/auth
+// are proxied to the Auth Service, while all other /api requests go to Trip Service.
 const apiTarget = process.env.API_PROXY_TARGET ?? 'http://localhost:8001'
+const authTarget = process.env.AUTH_PROXY_TARGET ?? 'http://localhost:8002'
 
 // Bind mounts on macOS/Windows don't always deliver file events to the container.
 const usePolling = process.env.VITE_USE_POLLING === 'true'
@@ -23,6 +22,7 @@ export default defineConfig({
     strictPort: true,
     watch: usePolling ? { usePolling: true, interval: 300 } : undefined,
     proxy: {
+      '/api/v1/auth': { target: authTarget, changeOrigin: true },
       '/api': { target: apiTarget, changeOrigin: true },
     },
   },

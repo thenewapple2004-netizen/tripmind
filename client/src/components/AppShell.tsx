@@ -1,24 +1,28 @@
 import { useEffect, useRef } from 'react'
-import { Link, Outlet, ScrollRestoration, useLocation } from 'react-router'
-import { Compass, Moon, Plus, Sun } from 'lucide-react'
-import { ButtonLink } from '@/components/ui/Button'
+import { Link, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
+import { Compass, LogIn, LogOut, Moon, Plus, Sun, User as UserIcon } from 'lucide-react'
+import { Button, ButtonLink } from '@/components/ui/Button'
 import { useTheme } from '@/hooks/useTheme'
+import { useAuth } from '@/hooks/useAuth'
 
 export function AppShell() {
   const { theme, toggle } = useTheme()
+  const { user, isAuthenticated, logout } = useAuth()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const mainRef = useRef<HTMLElement>(null)
   const lastPathname = useRef(pathname)
 
-  // After in-app navigation, move focus to the page so keyboard and screen-reader
-  // users start at the top of the new content rather than on a stale link.
-  // Comparing paths (rather than skipping "the first run") keeps the initial page
-  // load untouched even when StrictMode runs effects twice in development.
   useEffect(() => {
     if (lastPathname.current === pathname) return
     lastPathname.current = pathname
     mainRef.current?.focus({ preventScroll: true })
   }, [pathname])
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -54,9 +58,36 @@ export function AppShell() {
                 <Moon className="size-5" aria-hidden />
               )}
             </button>
-            <ButtonLink to="/trips/new" variant="primary" icon={<Plus className="size-4" aria-hidden />}>
-              New trip
-            </ButtonLink>
+
+            {isAuthenticated ? (
+              <>
+                <div className="hidden sm:flex items-center gap-2 rounded-lg bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg-muted">
+                  <UserIcon className="size-3.5 text-primary" />
+                  <span className="max-w-[150px] truncate">{user?.email}</span>
+                </div>
+                <ButtonLink to="/trips/new" variant="primary" icon={<Plus className="size-4" aria-hidden />}>
+                  New trip
+                </ButtonLink>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleLogout}
+                  icon={<LogOut className="size-4" aria-hidden />}
+                  aria-label="Log out"
+                >
+                  <span className="hidden sm:inline">Log out</span>
+                </Button>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <ButtonLink to="/login" variant="secondary" icon={<LogIn className="size-4" aria-hidden />}>
+                  Sign in
+                </ButtonLink>
+                <ButtonLink to="/register" variant="primary">
+                  Sign up
+                </ButtonLink>
+              </div>
+            )}
           </div>
         </div>
       </header>

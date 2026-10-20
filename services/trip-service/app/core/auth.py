@@ -42,12 +42,7 @@ def get_current_user_id(
 def get_optional_user_id(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ) -> Optional[UUID]:
-    """Optional authentication for endpoints that support both public and authenticated queries."""
+    """If an Authorization header is provided, validate it strictly. Return 401 if invalid."""
     if not credentials:
         return None
-    try:
-        payload = jwt.decode(credentials.credentials, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
-        user_id_str = payload.get("sub")
-        return UUID(user_id_str) if user_id_str else None
-    except Exception:
-        return None
+    return get_current_user_id(credentials)
