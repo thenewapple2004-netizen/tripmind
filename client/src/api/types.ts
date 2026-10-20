@@ -65,3 +65,23 @@ export interface Trip {
 export type TripInput = Omit<Trip, 'id' | 'user_id' | 'activities' | 'expenses'>
 export type TripPatch = Partial<TripInput>
 
+export interface PaginatedTrips {
+  items: Trip[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
+export interface TripFilterParams {
+  search?: string
+  status?: string
+  sort_by?: string
+  order?: 'asc' | 'desc'
+  page?: number
+  page_size?: number
+  min_budget?: number
+  max_budget?: number
+}
+
+

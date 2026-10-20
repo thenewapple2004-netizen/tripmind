@@ -1,5 +1,8 @@
-from typing import List, Optional
+import math
+from datetime import date
+from typing import List, Optional, Tuple
 from uuid import UUID
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 from app.models.trip import Trip
 from app.models.schemas import TripCreate, TripUpdate
@@ -24,7 +27,101 @@ class TripRepository:
         query = db.query(Trip)
         if user_id:
             query = query.filter(Trip.user_id == user_id)
-        return query.all()
+        return query.order_by(Trip.start_date.asc(), Trip.id.asc()).all()
+
+    def get_paginated(
+        self,
+        db: Session,
+        user_id: Optional[UUID] = None,
+        search: Optional[str] = None,
+        status: Optional[str] = None,
+        sort_by: Optional[str] = None,
+        order: Optional[str] = "asc",
+        page: int = 1,
+        page_size: int = 10,
+        min_budget: Optional[float] = None,
+        max_budget: Optional[float] = None,
+        start_date_from: Optional[date] = None,
+        start_date_to: Optional[date] = None,
+    ) -> Tuple[List[Trip], int, int]:
+        """Query trips with dynamic filtering, full-text ILIKE search, sorting, and pagination."""
+        query = db.query(Trip)
+
+        # Scoped strictly to authenticated user
+        if user_id:
+            query = query.filter(Trip.user_id == user_id)
+
+        # 11.1 Server-side search with ILIKE across title and destination
+        if search and search.strip():
+            term = f"%{search.strip()}%"
+            query = query.filter(
+                or_(
+                    Trip.title.ilike(term),
+                    Trip.destination.ilike(term),
+                )
+            )
+
+        # 11.2 Dynamic status and range filters
+        today = date.today()
+        if status and status != "all":
+            status_clean = status.lower().strip()
+            if status_clean == "upcoming":
+                query = query.filter(Trip.start_date > today)
+            elif status_clean == "ongoing":
+                query = query.filter(and_(Trip.start_date <= today, Trip.end_date >= today))
+            elif status_clean == "completed":
+                query = query.filter(Trip.end_date < today)
+
+        if min_budget is not None:
+            query = query.filter(Trip.budget >= min_budget)
+        if max_budget is not None:
+            query = query.filter(Trip.budget <= max_budget)
+
+        if start_date_from is not None:
+            query = query.filter(Trip.start_date >= start_date_from)
+        if start_date_to is not None:
+            query = query.filter(Trip.start_date <= start_date_to)
+
+        # 11.3 & 11.5 Total count before pagination limits
+        total = query.count()
+
+        # 11.4 Sorting with deterministic secondary order
+        sort_key = (sort_by or "upcoming").lower().strip()
+        is_desc = (order or "asc").lower().strip() == "desc"
+        order_clauses = []
+
+        if sort_key in ("upcoming", "date-asc", "start_date"):
+            if sort_key == "start_date" and is_desc:
+                order_clauses.append(Trip.start_date.desc())
+            else:
+                order_clauses.append(Trip.start_date.asc())
+        elif sort_key in ("date-desc", "newest"):
+            order_clauses.append(Trip.start_date.desc())
+        elif sort_key in ("budget-desc", "budget-high"):
+            order_clauses.append(Trip.budget.desc())
+        elif sort_key in ("budget-asc", "budget-low"):
+            order_clauses.append(Trip.budget.asc())
+        elif sort_key in ("title", "title-asc"):
+            order_clauses.append(Trip.title.asc())
+        elif sort_key in ("title-desc",):
+            order_clauses.append(Trip.title.desc())
+        elif sort_key == "budget":
+            order_clauses.append(Trip.budget.desc() if is_desc else Trip.budget.asc())
+        else:
+            order_clauses.append(Trip.start_date.asc())
+
+        # Stable secondary ordering by id to prevent pagination shifts
+        order_clauses.append(Trip.id.asc())
+        query = query.order_by(*order_clauses)
+
+        # 11.3 Pagination calculation: LIMIT and OFFSET
+        safe_page = max(1, page)
+        safe_size = max(1, min(100, page_size))
+        total_pages = math.ceil(total / safe_size) if total > 0 else 1
+        offset = (safe_page - 1) * safe_size
+
+        items = query.offset(offset).limit(safe_size).all()
+        return items, total, total_pages
 
     def get_by_id(self, db: Session, trip_id: UUID, user_id: Optional[UUID] = None) -> Optional[Trip]:
         query = db.query(Trip).filter(Trip.id == trip_id)

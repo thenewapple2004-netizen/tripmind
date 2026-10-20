@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Date, Numeric
+from sqlalchemy import Column, String, Date, Numeric, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -15,6 +15,13 @@ class Trip(Base):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     budget = Column(Numeric(10, 2), nullable=False)
+
+    __table_args__ = (
+        Index("ix_trips_user_start_date", "user_id", "start_date"),
+        Index("ix_trips_user_budget", "user_id", "budget"),
+        Index("ix_trips_title", "title"),
+        Index("ix_trips_destination", "destination"),
+    )
 
     activities = relationship(
         "Activity",

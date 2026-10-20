@@ -1,6 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { CircleAlert, Luggage, Plus, RefreshCw, Search, SearchX, X } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+  Luggage,
+  Plus,
+  Search,
+  SearchX,
+  X,
+} from 'lucide-react'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { inputStyles } from '@/components/ui/TextField'
 import { StateCard } from '@/components/ui/StateCard'
@@ -9,19 +18,18 @@ import { PageHeader } from '@/components/PageHeader'
 import { StatsRow, StatsRowSkeleton } from '@/components/StatsRow'
 import { TripCard, TripCardSkeleton } from '@/components/TripCard'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { useTrips } from '@/hooks/useTrips'
+import { usePaginatedTrips, useTrips } from '@/hooks/useTrips'
 import {
   SORT_OPTIONS,
   STATUS_LABEL,
-  filterTrips,
   getTripStatus,
   pluralize,
-  sortTrips,
   type SortKey,
   type StatusFilter,
 } from '@/lib/trips'
 
 const STATUS_FILTERS: StatusFilter[] = ['all', 'upcoming', 'ongoing', 'completed']
+const PAGE_SIZE = 6
 
 function isStatusFilter(value: string | null): value is StatusFilter {
   return STATUS_FILTERS.includes(value as StatusFilter)
@@ -32,38 +40,83 @@ function isSortKey(value: string | null): value is SortKey {
 
 export function DashboardPage() {
   useDocumentTitle('Trips')
-  const { data: trips, isPending, isError, error, refetch, isFetching } = useTrips()
 
-  // Filters live in the URL so a filtered view can be bookmarked, shared, and survives Back.
+  // Total trips for global stats
+  const { data: allTripsData, isPending: loadingAll } = useTrips()
+  const allTrips = allTripsData ?? []
+
+  // Filters and pagination from URL
   const [params, setParams] = useSearchParams()
-  // The text box owns its value locally. Binding it straight to the URL makes fast typing
-  // drop characters, because router updates land a render later than the keystrokes.
-  // The URL is a one-way mirror of the text, read once on load.
   const [query, setQuery] = useState(() => params.get('q') ?? '')
-  const status: StatusFilter = isStatusFilter(params.get('status')) ? (params.get('status') as StatusFilter) : 'all'
+  const [debouncedQuery, setDebouncedQuery] = useState(query)
+
+  const status: StatusFilter = isStatusFilter(params.get('status'))
+    ? (params.get('status') as StatusFilter)
+    : 'all'
   const sort: SortKey = isSortKey(params.get('sort')) ? (params.get('sort') as SortKey) : 'upcoming'
+  const page = Math.max(1, Number(params.get('page') ?? '1'))
+
+  // Debounce search input for snappy typing while minimizing server queries
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query)
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [query])
+
+  const setParam = (key: string, value: string, fallback: string) => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        if (value && value !== fallback) next.set(key, value)
+        else next.delete(key)
+        // Reset to page 1 whenever search, filter, or sort changes
+        if (key !== 'page') next.delete('page')
+        return next
+      },
+      { replace: true },
+    )
+  }
 
   const updateQuery = (value: string) => {
     setQuery(value)
     setParam('q', value, '')
   }
 
-  const setParam = (key: string, value: string, fallback: string) =>
-    setParams(
-      (current) => {
-        const next = new URLSearchParams(current)
-        if (value && value !== fallback) next.set(key, value)
-        else next.delete(key)
-        return next
-      },
-      { replace: true },
-    )
+  const handlePageChange = (newPage: number) => {
+    setParams((current) => {
+      const next = new URLSearchParams(current)
+      if (newPage > 1) next.set('page', String(newPage))
+      else next.delete('page')
+      return next
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Server-side paginated & filtered trips
+  const {
+    data: paginatedData,
+    isPending: loadingPaginated,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = usePaginatedTrips({
+    search: debouncedQuery.trim() || undefined,
+    status: status !== 'all' ? status : undefined,
+    sort_by: sort,
+    page,
+    page_size: PAGE_SIZE,
+  })
 
   const header = (
-    <PageHeader title="Your trips" description="Plan, budget and keep track of every journey in one place." />
+    <PageHeader
+      title="Your trips"
+      description="Plan, budget and keep track of every journey in one place."
+    />
   )
 
-  if (isPending) {
+  if (loadingAll && !allTripsData) {
     return (
       <div className="space-y-8">
         {header}
@@ -79,27 +132,7 @@ export function DashboardPage() {
     )
   }
 
-  if (isError && !trips) {
-    return (
-      <div className="space-y-8">
-        {header}
-        <StateCard
-          tone="danger"
-          icon={CircleAlert}
-          title="We couldn't load your trips"
-          description={error.message}
-        >
-          <Button variant="primary" onClick={() => refetch()} loading={isFetching} icon={<RefreshCw className="size-4" aria-hidden />}>
-            {isFetching ? 'Retrying…' : 'Try again'}
-          </Button>
-        </StateCard>
-      </div>
-    )
-  }
-
-  const allTrips = trips ?? []
-
-  if (allTrips.length === 0) {
+  if (allTrips.length === 0 && !debouncedQuery && status === 'all') {
     return (
       <div className="space-y-8">
         {header}
@@ -108,7 +141,11 @@ export function DashboardPage() {
           title="No trips yet"
           description="Start by adding your first trip. You can set the dates and budget, and edit them any time."
         >
-          <ButtonLink to="/trips/new" variant="primary" icon={<Plus className="size-4" aria-hidden />}>
+          <ButtonLink
+            to="/trips/new"
+            variant="primary"
+            icon={<Plus className="size-4" aria-hidden />}
+          >
             Plan your first trip
           </ButtonLink>
         </StateCard>
@@ -124,10 +161,15 @@ export function DashboardPage() {
     },
     { all: 0, upcoming: 0, ongoing: 0, completed: 0 },
   )
-  const visible = sortTrips(filterTrips(allTrips, { query, status }), sort)
+
+  const items = paginatedData?.items ?? []
+  const total = paginatedData?.total ?? 0
+  const totalPages = paginatedData?.total_pages ?? 1
   const isFiltered = query.trim() !== '' || status !== 'all'
+
   const clearFilters = () => {
     setQuery('')
+    setDebouncedQuery('')
     setParams({}, { replace: true })
   }
 
@@ -142,7 +184,7 @@ export function DashboardPage() {
         >
           <p className="flex items-center gap-2">
             <CircleAlert className="size-4 shrink-0" aria-hidden />
-            We couldn't refresh your trips, so this may be out of date. {error.message}
+            We couldn't refresh your trips. {error.message}
           </p>
           <Button size="sm" variant="secondary" onClick={() => refetch()} loading={isFetching}>
             Retry
@@ -157,9 +199,13 @@ export function DashboardPage() {
           All trips
         </h2>
 
+        {/* Search, Filter, Sort Controls */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative lg:w-80">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-fg-subtle" aria-hidden />
+            <Search
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-fg-subtle"
+              aria-hidden
+            />
             <input
               type="search"
               value={query}
@@ -181,7 +227,11 @@ export function DashboardPage() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div role="group" aria-label="Filter by status" className="flex flex-wrap gap-1 rounded-xl border border-line bg-surface p-1 shadow-sm">
+            <div
+              role="group"
+              aria-label="Filter by status"
+              className="flex flex-wrap gap-1 rounded-xl border border-line bg-surface p-1 shadow-sm"
+            >
               {STATUS_FILTERS.map((value) => (
                 <button
                   key={value}
@@ -218,13 +268,29 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <p aria-live="polite" className="text-sm text-fg-subtle">
-          {isFiltered
-            ? `Showing ${visible.length} of ${pluralize(allTrips.length, 'trip')}`
-            : pluralize(allTrips.length, 'trip')}
-        </p>
+        {/* Results summary & status */}
+        <div className="flex items-center justify-between text-sm text-fg-subtle">
+          <p aria-live="polite">
+            {isFiltered
+              ? `Showing ${total} matching ${pluralize(total, 'trip')}`
+              : `Total ${pluralize(allTrips.length, 'trip')}`}
+          </p>
 
-        {visible.length === 0 ? (
+          {totalPages > 1 && (
+            <p className="tabular-nums">
+              Page {page} of {totalPages}
+            </p>
+          )}
+        </div>
+
+        {/* Trip Grid or Empty State */}
+        {loadingPaginated && !paginatedData ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: PAGE_SIZE }, (_, i) => (
+              <TripCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
           <StateCard
             icon={SearchX}
             title="No trips match your filters"
@@ -236,12 +302,60 @@ export function DashboardPage() {
           </StateCard>
         ) : (
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {visible.map((trip) => (
+            {items.map((trip) => (
               <li key={trip.id}>
                 <TripCard trip={trip} />
               </li>
             ))}
           </ul>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <nav
+            aria-label="Trips pagination"
+            className="flex items-center justify-between border-t border-line pt-4"
+          >
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<ChevronLeft className="size-4" />}
+              disabled={page <= 1 || isFetching}
+              onClick={() => handlePageChange(page - 1)}
+            >
+              Previous
+            </Button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => handlePageChange(p)}
+                  aria-current={p === page ? 'page' : undefined}
+                  className={`size-8 rounded-lg text-xs font-medium transition-colors ${
+                    p === page
+                      ? 'bg-primary text-primary-fg shadow-sm'
+                      : 'text-fg-muted hover:bg-surface-2 hover:text-fg'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={page >= totalPages || isFetching}
+              onClick={() => handlePageChange(page + 1)}
+            >
+              <span className="flex items-center gap-1.5">
+                Next
+                <ChevronRight className="size-4" />
+              </span>
+            </Button>
+          </nav>
         )}
       </section>
     </div>

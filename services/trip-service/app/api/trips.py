@@ -1,11 +1,17 @@
-from typing import List
+from datetime import date
+from typing import List, Optional, Union
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user_id
 from app.core.database import get_db
-from app.models.schemas import TripCreate, TripResponse, TripUpdate
+from app.models.schemas import (
+    PaginatedTripResponse,
+    TripCreate,
+    TripResponse,
+    TripUpdate,
+)
 from app.services.trip_service import trip_repository
 
 router = APIRouter(prefix="/trips", tags=["Trips"])
@@ -21,13 +27,61 @@ def create_trip(
     return trip_repository.create(db, trip, user_id=user_id)
 
 
-@router.get("", response_model=List[TripResponse])
+@router.get("", response_model=Union[PaginatedTripResponse, List[TripResponse]])
 def get_all_trips(
+    response: Response,
+    search: Optional[str] = Query(None, description="Search across title and destination"),
+    status: Optional[str] = Query(None, description="Status filter: upcoming, ongoing, completed, all"),
+    sort_by: Optional[str] = Query(None, description="Sort field: start_date, budget, title, newest, upcoming"),
+    order: Optional[str] = Query("asc", description="Sort direction: asc or desc"),
+    page: Optional[int] = Query(None, ge=1, description="Page number (1-indexed)"),
+    page_size: Optional[int] = Query(None, ge=1, le=100, description="Items per page"),
+    min_budget: Optional[float] = Query(None, ge=0, description="Minimum budget filter"),
+    max_budget: Optional[float] = Query(None, ge=0, description="Maximum budget filter"),
+    start_date_from: Optional[date] = Query(None, description="Earliest trip start date"),
+    start_date_to: Optional[date] = Query(None, description="Latest trip start date"),
     db: Session = Depends(get_db),
     user_id: UUID = Depends(get_current_user_id),
 ):
-    """Retrieve only trips belonging to the authenticated user."""
-    return trip_repository.get_all(db, user_id=user_id)
+    """Retrieve user trips with server-side search, filtering, sorting, and pagination."""
+    # If any search, filter, sort, or pagination parameter is specified, use get_paginated
+    is_filtered_or_paged = any(
+        v is not None
+        for v in (search, status, sort_by, page, page_size, min_budget, max_budget, start_date_from, start_date_to)
+    )
+
+    if is_filtered_or_paged:
+        p = page if page is not None else 1
+        ps = page_size if page_size is not None else 10
+        items, total, total_pages = trip_repository.get_paginated(
+            db,
+            user_id=user_id,
+            search=search,
+            status=status,
+            sort_by=sort_by,
+            order=order,
+            page=p,
+            page_size=ps,
+            min_budget=min_budget,
+            max_budget=max_budget,
+            start_date_from=start_date_from,
+            start_date_to=start_date_to,
+        )
+        response.headers["X-Total-Count"] = str(total)
+        # If pagination was explicitly requested via page or page_size, return paginated envelope
+        if page is not None or page_size is not None:
+            return PaginatedTripResponse(
+                items=items,
+                total=total,
+                page=p,
+                page_size=ps,
+                total_pages=total_pages,
+            )
+        return items
+
+    trips = trip_repository.get_all(db, user_id=user_id)
+    response.headers["X-Total-Count"] = str(len(trips))
+    return trips
 
 
 @router.get("/{trip_id}", response_model=TripResponse)

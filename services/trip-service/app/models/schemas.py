@@ -155,3 +155,12 @@ class TripResponse(TripBase):
     user_id: Optional[UUID] = None
     activities: List[ActivityResponse] = []
     expenses: List[ExpenseResponse] = []
+
+
+class PaginatedTripResponse(BaseModel):
+    items: List[TripResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
