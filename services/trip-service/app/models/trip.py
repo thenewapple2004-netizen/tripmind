@@ -22,6 +22,12 @@ class Trip(Base):
         cascade="all, delete-orphan",
         order_by="Activity.activity_date",
     )
+    expenses = relationship(
+        "Expense",
+        back_populates="trip",
+        cascade="all, delete-orphan",
+        order_by="Expense.expense_date",
+    )
 
     def __repr__(self):
         return f"<Trip(id={self.id}, user_id={self.user_id}, title='{self.title}')>"

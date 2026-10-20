@@ -1,7 +1,84 @@
+from decimal import Decimal
 from datetime import date
 from typing import List, Optional
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, condecimal, model_validator
+
+
+# ==========================================
+# Expense Schemas
+# ==========================================
+
+VALID_EXPENSE_CATEGORIES = [
+    "Food",
+    "Transportation",
+    "Accommodation",
+    "Activities",
+    "Shopping",
+    "Other",
+]
+
+
+class ExpenseBase(BaseModel):
+    title: str = Field(..., min_length=1, max_length=150, description="Title of the expense")
+    amount: Decimal = Field(..., gt=0, decimal_places=2, max_digits=10, description="Amount spent (must be > 0)")
+    category: str = Field("Other", max_length=50, description="Category of the expense")
+    expense_date: date = Field(..., description="Date of the expense")
+    description: Optional[str] = Field(None, max_length=1000, description="Notes/details about the expense")
+
+    @model_validator(mode="after")
+    def validate_category(self):
+        if self.category not in VALID_EXPENSE_CATEGORIES:
+            # Normalize title case if user sends e.g. "food" -> "Food"
+            title_case = self.category.capitalize()
+            if title_case in VALID_EXPENSE_CATEGORIES:
+                self.category = title_case
+            else:
+                self.category = "Other"
+        return self
+
+
+class ExpenseCreate(ExpenseBase):
+    pass
+
+
+class ExpenseUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=150)
+    amount: Optional[Decimal] = Field(None, gt=0, decimal_places=2, max_digits=10)
+    category: Optional[str] = Field(None, max_length=50)
+    expense_date: Optional[date] = None
+    description: Optional[str] = Field(None, max_length=1000)
+
+    @model_validator(mode="after")
+    def validate_category(self):
+        if self.category is not None and self.category not in VALID_EXPENSE_CATEGORIES:
+            title_case = self.category.capitalize()
+            self.category = title_case if title_case in VALID_EXPENSE_CATEGORIES else "Other"
+        return self
+
+
+class ExpenseResponse(ExpenseBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    trip_id: UUID
+
+
+class CategorySummary(BaseModel):
+    category: str
+    total: Decimal
+    count: int
+    percentage: float
+
+
+class BudgetSummary(BaseModel):
+    budget: Decimal
+    total_spent: Decimal
+    remaining_budget: Decimal
+    percent_spent: float
+    is_over_budget: bool
+    expense_count: int
+    by_category: List[CategorySummary]
 
 
 # ==========================================
@@ -77,3 +154,4 @@ class TripResponse(TripBase):
     id: UUID
     user_id: Optional[UUID] = None
     activities: List[ActivityResponse] = []
+    expenses: List[ExpenseResponse] = []

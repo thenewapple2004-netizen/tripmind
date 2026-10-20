@@ -50,6 +50,13 @@ class TripRepository:
                         f"Cannot adjust trip dates: activity '{act.title}' scheduled for {act.activity_date} falls outside the new range ({start_date} to {end_date})"
                     )
 
+        if trip.expenses:
+            for exp in trip.expenses:
+                if exp.expense_date < start_date or exp.expense_date > end_date:
+                    raise ValueError(
+                        f"Cannot adjust trip dates: expense '{exp.title}' incurred on {exp.expense_date} falls outside the new range ({start_date} to {end_date})"
+                    )
+
         for key, value in update_data.items():
             setattr(trip, key, value)
 

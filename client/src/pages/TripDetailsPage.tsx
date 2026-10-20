@@ -13,6 +13,7 @@ import { useToast } from '@/components/ui/Toast'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useDeleteTrip, useTrip } from '@/hooks/useTrips'
 import { ActivitySection } from '@/components/activities/ActivitySection'
+import { ExpenseSection } from '@/components/expenses/ExpenseSection'
 import {
   formatCurrency,
   formatDateRange,
@@ -192,6 +193,8 @@ export function TripDetailsPage() {
         </div>
 
         <ActivitySection trip={trip} />
+
+        <ExpenseSection trip={trip} />
 
         <p className="flex items-center gap-1.5 px-1 text-xs text-fg-subtle">
           <Hash className="size-3.5" aria-hidden />

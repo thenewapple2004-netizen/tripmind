@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.api.trips import router as trips_router
 from app.api.activities import router as activities_router
+from app.api.expenses import router as expenses_router
 
 app = FastAPI(
     title="Trip Service",
@@ -10,6 +11,7 @@ app = FastAPI(
 
 app.include_router(trips_router, prefix="/api/v1")
 app.include_router(activities_router, prefix="/api/v1")
+app.include_router(expenses_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])
