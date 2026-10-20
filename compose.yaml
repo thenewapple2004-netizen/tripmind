@@ -11,11 +11,28 @@ services:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-tripmind_trips}"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  auth-service:
+    build: ./services/auth-service
+    container_name: tripmind-auth-service
+    restart: always
+    ports:
+      - "8002:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/tripmind_auth
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-tripmind-super-secret-jwt-key-change-in-production-2026}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+    volumes:
+      - ./services/auth-service/app:/app/app
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   trip-service:
     build: ./services/trip-service
@@ -25,6 +42,8 @@ services:
       - "8001:8000"
     environment:
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-tripmind_trips}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-tripmind-super-secret-jwt-key-change-in-production-2026}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
     volumes:
       - ./services/trip-service/app:/app/app
     depends_on:
@@ -38,15 +57,15 @@ services:
     ports:
       - "${CLIENT_PORT:-5173}:5173"
     environment:
-      # The dev server proxies /api to the Trip Service over the Compose network.
       API_PROXY_TARGET: http://trip-service:8000
+      AUTH_PROXY_TARGET: http://auth-service:8000
       VITE_USE_POLLING: ${VITE_USE_POLLING:-false}
     volumes:
       - ./client:/app
-      # Keep the container's installed node_modules; don't let the host folder shadow them.
       - /app/node_modules
     depends_on:
       - trip-service
+      - auth-service
 
 volumes:
   postgres_data:

@@ -39,3 +39,4 @@ class TripUpdate(BaseModel):
 class TripResponse(TripBase):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
+    user_id: Optional[UUID] = None

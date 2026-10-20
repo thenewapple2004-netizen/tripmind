@@ -1,44 +1,155 @@
 {
   "info": {
-    "name": "TripMind - Trip Service",
-    "description": "API collection for TripMind Trip Service microservice",
+    "name": "TripMind - Full Microservices API",
+    "description": "API collection for TripMind Auth Service and Trip Service microservices",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
-      "key": "baseUrl",
+      "key": "tripBaseUrl",
       "value": "http://localhost:8001",
       "type": "string"
     },
     {
+      "key": "authBaseUrl",
+      "value": "http://localhost:8002",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
       "key": "tripId",
-      "value": "69a69614-220b-4563-b242-88f06c8ba594",
+      "value": "",
       "type": "string"
     }
   ],
   "item": [
     {
-      "name": "Health",
+      "name": "Auth Service (Port 8002)",
       "item": [
         {
-          "name": "Health Check",
+          "name": "Auth Health Check",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["health"]
+            "url": "{{authBaseUrl}}/health"
+          }
+        },
+        {
+          "name": "1. Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"traveler@tripmind.com\",\n  \"password\": \"securepassword123\"\n}"
+            },
+            "url": "{{authBaseUrl}}/api/v1/auth/register"
+          }
+        },
+        {
+          "name": "2. Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.access_token);",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refresh_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
             }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"traveler@tripmind.com\",\n  \"password\": \"securepassword123\"\n}"
+            },
+            "url": "{{authBaseUrl}}/api/v1/auth/login"
+          }
+        },
+        {
+          "name": "3. Get Current User (/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{authBaseUrl}}/api/v1/auth/me"
+          }
+        },
+        {
+          "name": "4. Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.access_token);",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refresh_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{authBaseUrl}}/api/v1/auth/refresh"
           }
         }
       ]
     },
     {
-      "name": "Trips",
+      "name": "Trip Service (Port 8001)",
       "item": [
         {
-          "name": "1. Create Trip",
+          "name": "Trip Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{tripBaseUrl}}/health"
+          }
+        },
+        {
+          "name": "1. Create Trip (Authenticated)",
           "event": [
             {
               "listen": "test",
@@ -59,95 +170,84 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
               }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Swiss Winter Adventure\",\n  \"destination\": \"Interlaken, Switzerland\",\n  \"start_date\": \"2026-12-01\",\n  \"end_date\": \"2026-12-10\",\n  \"budget\": 4200.00\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/trips",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "trips"]
-            }
+            "url": "{{tripBaseUrl}}/api/v1/trips"
           }
         },
         {
-          "name": "2. Get All Trips",
+          "name": "2. Get My Trips (Authenticated)",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/trips",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "trips"]
-            }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{tripBaseUrl}}/api/v1/trips"
           }
         },
         {
-          "name": "3. Get Trip By ID",
+          "name": "3. Get Public / All Trips (Unauthenticated)",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/trips/{{tripId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "trips", "{{tripId}}"]
-            }
+            "url": "{{tripBaseUrl}}/api/v1/trips"
           }
         },
         {
-          "name": "4. Update Trip (PATCH)",
+          "name": "4. Get Trip By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{tripBaseUrl}}/api/v1/trips/{{tripId}}"
+          }
+        },
+        {
+          "name": "5. Update Trip (PATCH)",
           "request": {
             "method": "PATCH",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"budget\": 4800.00,\n  \"title\": \"Swiss Winter Adventure - Upgraded\"\n}"
+              "raw": "{\n  \"budget\": 4900.00\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/trips/{{tripId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "trips", "{{tripId}}"]
-            }
+            "url": "{{tripBaseUrl}}/api/v1/trips/{{tripId}}"
           }
         },
         {
-          "name": "5. Delete Trip",
+          "name": "6. Delete Trip",
           "request": {
             "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/trips/{{tripId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "trips", "{{tripId}}"]
-            }
-          }
-        },
-        {
-          "name": "6. Validation Error Test (Invalid Date)",
-          "request": {
-            "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Invalid Trip\",\n  \"destination\": \"Nowhere\",\n  \"start_date\": \"2026-12-10\",\n  \"end_date\": \"2026-12-01\",\n  \"budget\": 1000.00\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/trips",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "trips"]
-            }
+            "url": "{{tripBaseUrl}}/api/v1/trips/{{tripId}}"
           }
         }
       ]
