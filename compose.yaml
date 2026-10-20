@@ -31,5 +31,22 @@ services:
       postgres:
         condition: service_healthy
 
+  client:
+    build: ./client
+    container_name: tripmind-client
+    restart: always
+    ports:
+      - "${CLIENT_PORT:-5173}:5173"
+    environment:
+      # The dev server proxies /api to the Trip Service over the Compose network.
+      API_PROXY_TARGET: http://trip-service:8000
+      VITE_USE_POLLING: ${VITE_USE_POLLING:-false}
+    volumes:
+      - ./client:/app
+      # Keep the container's installed node_modules; don't let the host folder shadow them.
+      - /app/node_modules
+    depends_on:
+      - trip-service
+
 volumes:
   postgres_data:
