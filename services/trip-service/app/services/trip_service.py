@@ -43,6 +43,13 @@ class TripRepository:
         if end_date < start_date:
             raise ValueError("end_date cannot be earlier than start_date")
 
+        if trip.activities:
+            for act in trip.activities:
+                if act.activity_date < start_date or act.activity_date > end_date:
+                    raise ValueError(
+                        f"Cannot adjust trip dates: activity '{act.title}' scheduled for {act.activity_date} falls outside the new range ({start_date} to {end_date})"
+                    )
+
         for key, value in update_data.items():
             setattr(trip, key, value)
 

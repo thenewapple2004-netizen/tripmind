@@ -158,3 +158,58 @@ def test_update_and_delete_activity(client, alice_trip):
     # Confirm deletion
     get_res = client.get(f"/api/v1/trips/{alice_trip.id}/activities/{activity_id}")
     assert get_res.status_code == 404
+
+
+def test_shortening_trip_with_later_activities_rejected(client, alice_trip):
+    app.dependency_overrides[get_current_user_id] = lambda: USER_ALICE
+    # Alice trip dates: 2027-04-01 to 2027-04-15
+    # Alice adds an activity on 2027-04-12
+    act_data = {
+        "title": "Fuji Day Trip",
+        "activity_date": "2027-04-12",
+        "cost": 100.0,
+    }
+    res = client.post(f"/api/v1/trips/{alice_trip.id}/activities", json=act_data)
+    assert res.status_code == 201
+
+    # Try shortening trip end_date to 2027-04-10 (earlier than the activity date 2027-04-12)
+    shorten_res = client.patch(
+        f"/api/v1/trips/{alice_trip.id}",
+        json={"end_date": "2027-04-10"},
+    )
+    assert shorten_res.status_code == 400
+    assert "falls outside the new range" in shorten_res.json()["detail"]
+
+
+def test_unauthenticated_activity_requests_rejected(client, alice_trip):
+    # Without get_current_user_id override, requests must be rejected with 401
+    res = client.get(f"/api/v1/trips/{alice_trip.id}/activities")
+    assert res.status_code == 401
+
+    res = client.post(
+        f"/api/v1/trips/{alice_trip.id}/activities",
+        json={"title": "Test", "activity_date": "2027-04-05", "cost": 0.0},
+    )
+    assert res.status_code == 401
+
+
+def test_cascade_delete_removes_activities(client, alice_trip, db_session):
+    app.dependency_overrides[get_current_user_id] = lambda: USER_ALICE
+    # Add activity
+    act_data = {
+        "title": "Akihabara Arcade",
+        "activity_date": "2027-04-06",
+        "cost": 20.0,
+    }
+    res = client.post(f"/api/v1/trips/{alice_trip.id}/activities", json=act_data)
+    assert res.status_code == 201
+    activity_id = UUID(res.json()["id"])
+
+    # Delete the trip
+    del_trip_res = client.delete(f"/api/v1/trips/{alice_trip.id}")
+    assert del_trip_res.status_code == 204
+
+    # Verify directly from database that the activity was cascade-deleted
+    act_in_db = db_session.query(Activity).filter(Activity.id == activity_id).first()
+    assert act_in_db is None
+
