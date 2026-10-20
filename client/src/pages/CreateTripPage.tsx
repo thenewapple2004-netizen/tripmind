@@ -19,6 +19,7 @@ export function CreateTripPage() {
 
       <div className="mt-8 rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-8">
         <TripForm
+          showDemoButton
           submitLabel="Create trip"
           submittingLabel="Creating…"
           cancelTo="/"
