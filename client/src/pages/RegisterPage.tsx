@@ -54,7 +54,7 @@ export function RegisterPage() {
     try {
       await register({ email, password })
       await login({ email, password })
-      toast.show('Account created successfully! Welcome to TripMind.')
+      toast.success('Account created successfully! Welcome to TripMind.')
       navigate('/', { replace: true })
     } catch (err) {
       if (err instanceof ApiError) {

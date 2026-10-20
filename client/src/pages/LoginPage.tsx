@@ -48,7 +48,7 @@ export function LoginPage() {
 
     try {
       await login({ email, password })
-      toast.show('Welcome back! You are now logged in.')
+      toast.success('Welcome back! You are now logged in.')
       navigate(from, { replace: true })
     } catch (err) {
       if (err instanceof ApiError) {

@@ -46,6 +46,7 @@ services:
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
     volumes:
       - ./services/trip-service/app:/app/app
+      - ./services/trip-service/alembic:/app/alembic
     depends_on:
       postgres:
         condition: service_healthy

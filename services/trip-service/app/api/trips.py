@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.auth import get_current_user_id, get_optional_user_id
+from app.core.auth import get_current_user_id
 from app.core.database import get_db
 from app.models.schemas import TripCreate, TripResponse, TripUpdate
 from app.services.trip_service import trip_repository
@@ -15,18 +15,18 @@ router = APIRouter(prefix="/trips", tags=["Trips"])
 def create_trip(
     trip: TripCreate,
     db: Session = Depends(get_db),
-    user_id: Optional[UUID] = Depends(get_optional_user_id),
+    user_id: UUID = Depends(get_current_user_id),
 ):
-    """Create a new trip. If an Authorization header is provided, binds trip to user_id."""
+    """Create a new trip strictly owned by the authenticated user."""
     return trip_repository.create(db, trip, user_id=user_id)
 
 
 @router.get("", response_model=List[TripResponse])
 def get_all_trips(
     db: Session = Depends(get_db),
-    user_id: Optional[UUID] = Depends(get_optional_user_id),
+    user_id: UUID = Depends(get_current_user_id),
 ):
-    """Retrieve trips. If authenticated, returns user's trips; otherwise returns public/demo trips."""
+    """Retrieve only trips belonging to the authenticated user."""
     return trip_repository.get_all(db, user_id=user_id)
 
 
@@ -34,9 +34,9 @@ def get_all_trips(
 def get_trip(
     trip_id: UUID,
     db: Session = Depends(get_db),
-    user_id: Optional[UUID] = Depends(get_optional_user_id),
+    user_id: UUID = Depends(get_current_user_id),
 ):
-    """Retrieve a single trip with ownership check if user is authenticated."""
+    """Retrieve a single trip owned by the authenticated user."""
     trip = trip_repository.get_by_id(db, trip_id, user_id=user_id)
     if not trip:
         raise HTTPException(
@@ -51,9 +51,9 @@ def update_trip(
     trip_id: UUID,
     trip_update: TripUpdate,
     db: Session = Depends(get_db),
-    user_id: Optional[UUID] = Depends(get_optional_user_id),
+    user_id: UUID = Depends(get_current_user_id),
 ):
-    """Update a trip with date validation and ownership check."""
+    """Update a trip owned by the authenticated user."""
     try:
         updated_trip = trip_repository.update(db, trip_id, trip_update, user_id=user_id)
     except ValueError as e:
@@ -71,9 +71,9 @@ def update_trip(
 def delete_trip(
     trip_id: UUID,
     db: Session = Depends(get_db),
-    user_id: Optional[UUID] = Depends(get_optional_user_id),
+    user_id: UUID = Depends(get_current_user_id),
 ):
-    """Delete a trip with ownership check."""
+    """Delete a trip owned by the authenticated user."""
     deleted = trip_repository.delete(db, trip_id, user_id=user_id)
     if not deleted:
         raise HTTPException(
