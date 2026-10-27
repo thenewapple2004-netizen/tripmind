@@ -14,6 +14,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useDeleteTrip, useTrip } from '@/hooks/useTrips'
 import { ActivitySection } from '@/components/activities/ActivitySection'
 import { ExpenseSection } from '@/components/expenses/ExpenseSection'
+import { TripReportSection } from '@/components/trips/TripReportSection'
 import {
   formatCurrency,
   formatDateRange,
@@ -195,6 +196,8 @@ export function TripDetailsPage() {
         <ActivitySection trip={trip} />
 
         <ExpenseSection trip={trip} />
+
+        <TripReportSection tripId={trip.id} tripTitle={trip.title} />
 
         <p className="flex items-center gap-1.5 px-1 text-xs text-fg-subtle">
           <Hash className="size-3.5" aria-hidden />

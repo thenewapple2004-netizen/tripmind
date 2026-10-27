@@ -164,3 +164,23 @@ class PaginatedTripResponse(BaseModel):
     page_size: int
     total_pages: int
 
+
+# ==========================================
+# Report Schemas
+# ==========================================
+
+class ReportJobResponse(BaseModel):
+    task_id: str
+    trip_id: UUID
+    status: str
+    message: str
+
+
+class ReportStatusResponse(BaseModel):
+    task_id: str
+    trip_id: UUID
+    status: str
+    message: Optional[str] = None
+    result: Optional[dict] = None
+    error: Optional[str] = None
+
