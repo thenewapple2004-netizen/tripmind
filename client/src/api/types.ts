@@ -84,4 +84,10 @@ export interface TripFilterParams {
   max_budget?: number
 }
 
-
+/** Owner profile returned by the Trip Service owner-profile endpoint (sourced from Auth Service). */
+export interface OwnerProfile {
+  id: string
+  email: string
+  created_at: string
+  source: string
+}

@@ -19,6 +19,12 @@ class Settings(BaseSettings):
     jwt_secret_key: str = "tripmind-super-secret-jwt-key-change-in-production-2026"
     jwt_algorithm: str = "HS256"
 
+    # Auth Service inter-service communication settings
+    auth_service_url: str = "http://auth-service:8000"
+    auth_http_timeout: float = 5.0      # seconds per request
+    auth_http_max_retries: int = 3      # max retry attempts on transient errors
+    auth_http_backoff_factor: float = 0.5  # seconds × (2 ** attempt) backoff
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

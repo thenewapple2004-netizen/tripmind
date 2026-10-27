@@ -60,6 +60,7 @@ services:
       REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-tripmind-super-secret-jwt-key-change-in-production-2026}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:8000}
     volumes:
       - ./services/trip-service/app:/app/app
       - ./services/trip-service/alembic:/app/alembic
@@ -83,6 +84,7 @@ services:
       REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-tripmind-super-secret-jwt-key-change-in-production-2026}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:8000}
     volumes:
       - ./services/trip-service/app:/app/app
       - ./services/trip-service/reports:/app/reports

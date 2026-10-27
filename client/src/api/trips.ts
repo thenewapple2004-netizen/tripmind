@@ -1,5 +1,5 @@
 import { request } from './http'
-import type { PaginatedTrips, Trip, TripFilterParams, TripInput, TripPatch } from './types'
+import type { OwnerProfile, PaginatedTrips, Trip, TripFilterParams, TripInput, TripPatch } from './types'
 
 export const tripsApi = {
   list: (params?: TripFilterParams, signal?: AbortSignal) => {
@@ -31,4 +31,8 @@ export const tripsApi = {
 
   remove: (id: string) =>
     request<void>(`/trips/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+
+  /** Fetches the owner's profile from Auth Service via Trip Service inter-service call. */
+  getOwnerProfile: (tripId: string, signal?: AbortSignal) =>
+    request<OwnerProfile>(`/trips/${encodeURIComponent(tripId)}/owner-profile`, { signal }),
 }

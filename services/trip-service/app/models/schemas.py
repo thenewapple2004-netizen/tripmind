@@ -184,3 +184,14 @@ class ReportStatusResponse(BaseModel):
     result: Optional[dict] = None
     error: Optional[str] = None
 
+
+# ==========================================
+# Owner Profile Schemas (microservice data)
+# ==========================================
+
+class OwnerProfileResponse(BaseModel):
+    """Trip owner profile fetched from the Auth Service via service-to-service call."""
+    id: str
+    email: str
+    created_at: str
+    source: str = "auth-service"  # documents which service supplied this data

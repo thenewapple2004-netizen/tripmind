@@ -14,6 +14,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useDeleteTrip, useTrip } from '@/hooks/useTrips'
 import { ActivitySection } from '@/components/activities/ActivitySection'
 import { ExpenseSection } from '@/components/expenses/ExpenseSection'
+import { OwnerProfileCard } from '@/components/trips/OwnerProfileCard'
 import { TripReportSection } from '@/components/trips/TripReportSection'
 import {
   formatCurrency,
@@ -196,6 +197,8 @@ export function TripDetailsPage() {
         <ActivitySection trip={trip} />
 
         <ExpenseSection trip={trip} />
+
+        <OwnerProfileCard tripId={trip.id} />
 
         <TripReportSection tripId={trip.id} tripTitle={trip.title} />
 
