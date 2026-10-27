@@ -6,6 +6,8 @@ from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 from app.models.trip import Trip
 from app.models.schemas import TripCreate, TripUpdate
+from app.core import cache
+from app.core.cache import get_budget_cache_key
 
 
 class TripRepository:
@@ -159,14 +161,23 @@ class TripRepository:
 
         db.commit()
         db.refresh(trip)
+
+        if trip.user_id:
+            cache.delete_cache(get_budget_cache_key(trip.user_id, trip.id))
+
         return trip
 
     def delete(self, db: Session, trip_id: UUID, user_id: Optional[UUID] = None) -> bool:
         trip = self.get_by_id(db, trip_id, user_id=user_id)
         if not trip:
             return False
+        owner_id = trip.user_id
         db.delete(trip)
         db.commit()
+
+        if owner_id:
+            cache.delete_cache(get_budget_cache_key(owner_id, trip_id))
+
         return True
 
 

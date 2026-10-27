@@ -4,6 +4,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_env: str = "development"
     database_url: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/tripmind_trips"
+    redis_url: str = "redis://redis:6379/0"
+    redis_connect_timeout: float = 2.0
+    redis_socket_timeout: float = 2.0
+    redis_cache_ttl: int = 60
     
     # Shared JWT secret key and algorithm for token validation
     jwt_secret_key: str = "tripmind-super-secret-jwt-key-change-in-production-2026"
