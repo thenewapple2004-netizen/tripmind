@@ -55,11 +55,37 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-tripmind_trips}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/1}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-tripmind-super-secret-jwt-key-change-in-production-2026}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
     volumes:
       - ./services/trip-service/app:/app/app
       - ./services/trip-service/alembic:/app/alembic
+      - ./services/trip-service/reports:/app/reports
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery-worker:
+    build: ./services/trip-service
+    container_name: tripmind-celery-worker
+    command: celery -A app.core.celery_app.celery_app worker --loglevel=info
+    restart: always
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-tripmind_trips}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/1}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
+      REPORTS_DIR: ${REPORTS_DIR:-/app/reports}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-tripmind-super-secret-jwt-key-change-in-production-2026}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+    volumes:
+      - ./services/trip-service/app:/app/app
+      - ./services/trip-service/reports:/app/reports
     depends_on:
       postgres:
         condition: service_healthy
