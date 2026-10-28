@@ -1,0 +1,52 @@
+===============================================================
+TRIP DETAILS & SUMMARY REPORT
+===============================================================
+Trip Title,Kyoto Cherry Blossom Season
+Destination,"Kyoto, Japan"
+Trip ID,ff4675e5-73fc-5e2f-8fd6-3cec47b9afd2
+Owner ID,5be598de-6067-40b4-881f-63645b6e7b56
+Start Date,2026-03-12
+End Date,2026-03-20
+Generated At (UTC),2026-10-28 21:05:58
+
+===============================================================
+BUDGET OVERVIEW
+===============================================================
+Metric,Value
+Total Budget ($),3200.00
+Total Spent ($),3300.00
+Remaining Budget ($),-100.00
+Percent Spent (%),103.12%
+Budget Status,OVER BUDGET
+Total Expense Transactions,6
+
+===============================================================
+EXPENSES BY CATEGORY
+===============================================================
+Category,Total Spent ($),Transaction Count,Percentage of Total
+Transportation,1410.00,2,42.73%
+Accommodation,1050.00,1,31.82%
+Food,550.00,2,16.67%
+Shopping,290.00,1,8.79%
+
+===============================================================
+SCHEDULED ACTIVITIES
+===============================================================
+Activity Title,Date,Location,Estimated Cost ($),Notes / Description
+Check in near Gion,2026-03-12,Gion,0.00,
+Fushimi Inari at dawn,2026-03-13,Fushimi Inari Shrine,0.00,
+Philosopher's Path and Ginkaku-ji,2026-03-14,Higashiyama,6.00,
+Arashiyama bamboo grove and Tenryu-ji,2026-03-15,Arashiyama,8.00,
+Tea ceremony in Gion,2026-03-17,Gion,45.00,
+Day trip to Nara,2026-03-19,Nara,12.00,
+
+===============================================================
+ITEMIZED EXPENSES LEDGER
+===============================================================
+Expense Title,Date,Category,Amount ($),Description / Notes
+Meals across the trip,2026-03-20,Food,340.00,
+Ceramics and matcha sets,2026-03-17,Shopping,290.00,
+JR Pass and local transit,2026-03-15,Transportation,260.00,
+Kaiseki dinner,2026-03-14,Food,210.00,
+"Ryokan and hotel, 8 nights",2026-03-12,Accommodation,1050.00,
+Return flights,2026-01-26,Transportation,1150.00,

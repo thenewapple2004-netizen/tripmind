@@ -16,14 +16,14 @@ function StatCard({
   helper: ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-5">
+    <div className="rounded-3xl border border-line bg-surface p-4 shadow-card sm:p-5">
       <div className="flex items-center gap-2 text-sm font-medium text-fg-muted">
-        <span className="flex size-8 items-center justify-center rounded-lg bg-primary-soft text-primary-soft-fg">
+        <span className="flex size-8 items-center justify-center rounded-xl bg-primary-soft text-primary-ink">
           <Icon className="size-4" aria-hidden />
         </span>
         {label}
       </div>
-      <p className="mt-3 truncate text-2xl font-semibold tracking-tight tabular-nums text-fg">{value}</p>
+      <p className="mt-3 truncate font-display text-2xl font-extrabold tracking-tight tabular-nums text-fg">{value}</p>
       <p className="mt-0.5 truncate text-sm text-fg-subtle">{helper}</p>
     </div>
   )
@@ -65,7 +65,7 @@ export function StatsRowSkeleton() {
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4" role="presentation">
       {Array.from({ length: 4 }, (_, i) => (
-        <div key={i} className="rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-5">
+        <div key={i} className="rounded-3xl border border-line bg-surface p-4 shadow-card sm:p-5">
           <Skeleton className="h-8 w-32" />
           <Skeleton className="mt-4 h-8 w-24" />
           <Skeleton className="mt-2 h-4 w-28" />

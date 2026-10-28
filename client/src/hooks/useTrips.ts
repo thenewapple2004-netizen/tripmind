@@ -48,6 +48,7 @@ export function useCreateTrip() {
     onSuccess: (trip) => {
       queryClient.setQueryData(tripKeys.detail(trip.id), trip)
       void queryClient.invalidateQueries({ queryKey: tripKeys.all })
+      void queryClient.invalidateQueries({ queryKey: ['owner'] })
     },
   })
 }
@@ -59,6 +60,7 @@ export function useUpdateTrip(id: string) {
     onSuccess: (trip) => {
       queryClient.setQueryData(tripKeys.detail(id), trip)
       void queryClient.invalidateQueries({ queryKey: tripKeys.all })
+      void queryClient.invalidateQueries({ queryKey: ['owner'] })
     },
   })
 }
@@ -70,6 +72,7 @@ export function useDeleteTrip() {
     onSuccess: (_data, id) => {
       queryClient.removeQueries({ queryKey: tripKeys.detail(id) })
       void queryClient.invalidateQueries({ queryKey: tripKeys.all })
+      void queryClient.invalidateQueries({ queryKey: ['owner'] })
     },
   })
 }

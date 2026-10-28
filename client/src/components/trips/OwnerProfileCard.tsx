@@ -140,7 +140,7 @@ export function OwnerProfileCard({ tripId }: OwnerProfileCardProps) {
 
       {/* Microservice annotation */}
       <div className="mt-4 flex items-start gap-2 rounded-xl border border-primary-line/30 bg-primary-soft/30 px-3.5 py-2.5 text-xs text-fg-muted">
-        <RefreshCw className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden />
+        <RefreshCw className="mt-0.5 size-3.5 shrink-0 text-primary-ink" aria-hidden />
         <p>
           Profile data retrieved live from the{' '}
           <strong className="font-semibold text-fg">Auth Service</strong> via HTTP

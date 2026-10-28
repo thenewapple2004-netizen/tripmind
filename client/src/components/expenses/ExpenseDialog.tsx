@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useForm, type UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Calendar, CircleAlert, DollarSign, Tag, X } from 'lucide-react'
+import { Calendar, CircleAlert, Tag, X } from 'lucide-react'
 import { ApiError } from '@/api/errors'
 import type { Expense, Trip } from '@/api/types'
 import { Button } from '@/components/ui/Button'
@@ -14,6 +14,7 @@ import {
   toExpenseInput,
   type ExpenseFormValues,
 } from '@/lib/schema'
+import { currencySymbol } from '@/lib/money'
 
 interface ExpenseDialogProps {
   open: boolean
@@ -162,9 +163,8 @@ export function ExpenseDialog({ open, trip, expense, onClose }: ExpenseDialogPro
             inputMode="decimal"
             step="0.01"
             min="0.01"
-            prefix="$"
+            prefix={currencySymbol()}
             placeholder="0.00"
-            icon={<DollarSign className="size-4" />}
             error={errors.amount?.message}
             {...register('amount')}
           />

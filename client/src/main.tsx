@@ -9,12 +9,19 @@ import { AuthProvider } from '@/hooks/useAuth'
 import { shouldRetry } from '@/hooks/useTrips'
 import { CreateTripPage } from '@/pages/CreateTripPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { DocumentsPage } from '@/pages/DocumentsPage'
 import { EditTripPage } from '@/pages/EditTripPage'
+import { ExpensesPage } from '@/pages/ExpensesPage'
+import { ItineraryPage } from '@/pages/ItineraryPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { OwnerPortalPage } from '@/pages/OwnerPortalPage'
+import { PlannerPage } from '@/pages/PlannerPage'
+import { ProfilePage } from '@/pages/ProfilePage'
 import { RegisterPage } from '@/pages/RegisterPage'
+import { ReportsPage } from '@/pages/ReportsPage'
 import { RouteError } from '@/pages/RouteError'
+import { SettingsPage } from '@/pages/SettingsPage'
 import { TripDetailsPage } from '@/pages/TripDetailsPage'
 import '@/index.css'
 
@@ -71,6 +78,62 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <OwnerPortalPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'itinerary',
+        element: (
+          <ProtectedRoute>
+            <ItineraryPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'expenses',
+        element: (
+          <ProtectedRoute>
+            <ExpensesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'reports',
+        element: (
+          <ProtectedRoute>
+            <ReportsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'documents',
+        element: (
+          <ProtectedRoute>
+            <DocumentsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'planner',
+        element: (
+          <ProtectedRoute>
+            <PlannerPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'profile',
+        element: (
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'settings',
+        element: (
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         ),
       },

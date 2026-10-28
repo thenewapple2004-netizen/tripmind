@@ -426,7 +426,7 @@ try {
   await dark.goto(`${BASE}/`)
   await dark.waitForSelector(CARDS)
   check('dark theme follows the OS setting', (await dark.evaluate(() => document.documentElement.dataset.theme)) === 'dark')
-  await dark.getByRole('button', { name: 'Switch to light theme' }).click()
+  await dark.getByRole('switch').click()
   await dark.reload()
   await dark.waitForSelector(CARDS)
   check('theme choice persists across reloads', (await dark.evaluate(() => document.documentElement.dataset.theme)) === 'light')

@@ -111,8 +111,13 @@ export function DashboardPage() {
 
   const header = (
     <PageHeader
-      title="Your trips"
+      title="My trips"
       description="Plan, budget and keep track of every journey in one place."
+      actions={
+        <ButtonLink to="/trips/new" variant="primary" icon={<Plus className="size-4" aria-hidden />}>
+          New trip
+        </ButtonLink>
+      }
     />
   )
 
@@ -122,7 +127,7 @@ export function DashboardPage() {
         {header}
         <div role="status" aria-label="Loading trips" className="space-y-8">
           <StatsRowSkeleton />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
             {Array.from({ length: 6 }, (_, i) => (
               <TripCardSkeleton key={i} />
             ))}
@@ -230,7 +235,7 @@ export function DashboardPage() {
             <div
               role="group"
               aria-label="Filter by status"
-              className="flex flex-wrap gap-1 rounded-xl border border-line bg-surface p-1 shadow-sm"
+              className="flex flex-wrap gap-1 rounded-2xl border border-line bg-surface p-1 shadow-sm"
             >
               {STATUS_FILTERS.map((value) => (
                 <button
@@ -285,7 +290,7 @@ export function DashboardPage() {
 
         {/* Trip Grid or Empty State */}
         {loadingPaginated && !paginatedData ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
             {Array.from({ length: PAGE_SIZE }, (_, i) => (
               <TripCardSkeleton key={i} />
             ))}
@@ -301,7 +306,7 @@ export function DashboardPage() {
             </Button>
           </StateCard>
         ) : (
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
             {items.map((trip) => (
               <li key={trip.id}>
                 <TripCard trip={trip} />

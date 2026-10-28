@@ -23,23 +23,23 @@ const CATEGORY_META: Record<
   },
   Transportation: {
     icon: Car,
-    color: 'text-blue-500',
-    badgeBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+    color: 'text-sky-500',
+    badgeBg: 'bg-sky-500/10 text-sky-700 dark:text-sky-300',
   },
   Accommodation: {
     icon: Bed,
-    color: 'text-indigo-500',
-    badgeBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+    color: 'text-primary-ink',
+    badgeBg: 'bg-primary-soft text-primary-soft-fg',
   },
   Activities: {
     icon: Compass,
-    color: 'text-emerald-500',
-    badgeBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    color: 'text-teal-500',
+    badgeBg: 'bg-teal-500/10 text-teal-700 dark:text-teal-300',
   },
   Shopping: {
     icon: ShoppingBag,
-    color: 'text-pink-500',
-    badgeBg: 'bg-pink-500/10 text-pink-600 dark:text-pink-400',
+    color: 'text-rose-400',
+    badgeBg: 'bg-rose-400/10 text-rose-700 dark:text-rose-300',
   },
   Other: {
     icon: Receipt,

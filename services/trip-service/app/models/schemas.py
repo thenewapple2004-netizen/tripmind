@@ -1,8 +1,8 @@
 from decimal import Decimal
-from datetime import date
-from typing import List, Optional
+from datetime import date, datetime, time
+from typing import List, Literal, Optional
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field, condecimal, model_validator
+from pydantic import BaseModel, ConfigDict, Field, condecimal, field_validator, model_validator
 
 
 # ==========================================
@@ -85,12 +85,39 @@ class BudgetSummary(BaseModel):
 # Activity Schemas
 # ==========================================
 
+MAX_DURATION_MINUTES = 24 * 60
+
+
+def _drop_seconds(value: Optional[time]) -> Optional[time]:
+    """Planner times are whole minutes; "09:30:45" is stored as 09:30."""
+    return value.replace(second=0, microsecond=0, tzinfo=None) if value else value
+
+
+def check_fits_in_day(start: Optional[time], duration: Optional[int]) -> None:
+    """An activity may not run past midnight: the planner shows one day at a time."""
+    if start is not None and duration is not None:
+        if start.hour * 60 + start.minute + duration > MAX_DURATION_MINUTES:
+            raise ValueError("The activity would run past midnight. Shorten it or start it earlier.")
+
+
 class ActivityBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=150, description="Title of the activity")
     description: Optional[str] = Field(None, max_length=1000, description="Notes/details about activity")
     location: Optional[str] = Field(None, max_length=150, description="Location of activity")
     activity_date: date = Field(..., description="Date of the activity")
     cost: float = Field(0.0, ge=0, description="Cost of the activity (must be >= 0)")
+    start_time: Optional[time] = Field(None, description="Local start time (HH:MM), optional")
+    duration_minutes: Optional[int] = Field(None, ge=5, le=MAX_DURATION_MINUTES, description="Length in minutes (5 to 1440)")
+
+    @field_validator("start_time")
+    @classmethod
+    def _whole_minutes(cls, value):
+        return _drop_seconds(value)
+
+    @model_validator(mode="after")
+    def _fits_in_day(self):
+        check_fits_in_day(self.start_time, self.duration_minutes)
+        return self
 
 
 class ActivityCreate(ActivityBase):
@@ -103,6 +130,18 @@ class ActivityUpdate(BaseModel):
     location: Optional[str] = Field(None, max_length=150)
     activity_date: Optional[date] = None
     cost: Optional[float] = Field(None, ge=0)
+    start_time: Optional[time] = None
+    duration_minutes: Optional[int] = Field(None, ge=5, le=MAX_DURATION_MINUTES)
+
+    @field_validator("start_time")
+    @classmethod
+    def _whole_minutes(cls, value):
+        return _drop_seconds(value)
+
+    @model_validator(mode="after")
+    def _fits_in_day(self):
+        check_fits_in_day(self.start_time, self.duration_minutes)
+        return self
 
 
 class ActivityResponse(ActivityBase):
@@ -110,6 +149,136 @@ class ActivityResponse(ActivityBase):
 
     id: UUID
     trip_id: UUID
+    position: int = 0
+
+
+# ==========================================
+# Itinerary planner schemas
+# ==========================================
+
+class ActivityMove(BaseModel):
+    """Where one activity should end up: its day and its slot within that day."""
+    id: UUID
+    activity_date: date
+    position: int = Field(..., ge=0, le=10_000)
+
+
+class ArrangeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    moves: List[ActivityMove] = Field(..., min_length=1, max_length=500)
+
+    @model_validator(mode="after")
+    def _unique_ids(self):
+        ids = [m.id for m in self.moves]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Each activity can appear only once")
+        return self
+
+
+class ItineraryConflict(BaseModel):
+    activity_date: date
+    activity_ids: List[UUID]
+    overlap_minutes: int
+
+
+class ItineraryDay(BaseModel):
+    date: date
+    day_number: int
+    activities: List[ActivityResponse]
+    total_cost: float
+    scheduled_minutes: int
+
+
+class ItineraryResponse(BaseModel):
+    trip_id: UUID
+    start_date: date
+    end_date: date
+    total_activities: int
+    unscheduled_count: int
+    days: List[ItineraryDay]
+    conflicts: List[ItineraryConflict]
+
+
+# ==========================================
+# Checklist schemas
+# ==========================================
+
+CHECKLIST_CATEGORIES = ("documents", "packing", "bookings", "health", "other")
+
+
+class ChecklistItemCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(..., min_length=1, max_length=200)
+    category: Literal[CHECKLIST_CATEGORIES] = "other"  # type: ignore[valid-type]
+
+    @field_validator("text")
+    @classmethod
+    def _trim(cls, value):
+        value = " ".join(value.split())
+        if not value:
+            raise ValueError("Text can't be blank")
+        return value
+
+
+class ChecklistItemUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: Optional[str] = Field(None, min_length=1, max_length=200)
+    category: Optional[Literal[CHECKLIST_CATEGORIES]] = None  # type: ignore[valid-type]
+    is_done: Optional[bool] = None
+
+    @field_validator("text")
+    @classmethod
+    def _trim(cls, value):
+        if value is None:
+            return value
+        value = " ".join(value.split())
+        if not value:
+            raise ValueError("Text can't be blank")
+        return value
+
+    @model_validator(mode="after")
+    def _no_nulls(self):
+        for name in self.model_fields_set:
+            if getattr(self, name) is None:
+                raise ValueError(f"{name} cannot be null")
+        return self
+
+
+class ChecklistItemResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    trip_id: UUID
+    text: str
+    category: str
+    is_done: bool
+    position: int
+
+
+# ==========================================
+# Travel document schemas
+# ==========================================
+
+DOCUMENT_KINDS = ("passport", "visa", "ticket", "booking", "insurance", "other")
+
+
+class DocumentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    trip_id: UUID
+    filename: str
+    content_type: str
+    size_bytes: int
+    kind: str
+    uploaded_at: datetime
+
+
+class OwnerDocumentItem(DocumentResponse):
+    trip_title: str
 
 
 # ==========================================
@@ -259,6 +428,8 @@ class OwnerRecentActivity(BaseModel):
     activity_date: date
     cost: Decimal
     description: Optional[str] = None
+    start_time: Optional[time] = None
+    duration_minutes: Optional[int] = None
 
 
 class OwnerRecentExpense(BaseModel):

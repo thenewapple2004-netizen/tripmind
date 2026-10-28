@@ -79,7 +79,7 @@ export function TripReportSection({ tripId, tripTitle }: TripReportSectionProps)
           aria-live="polite"
           className="mt-5 flex flex-col items-center justify-center rounded-xl border border-primary-line/30 bg-primary-soft/40 p-6 text-center"
         >
-          <LoaderCircle className="size-8 animate-spin text-primary" aria-hidden />
+          <LoaderCircle className="size-8 animate-spin text-primary-ink" aria-hidden />
           <h3 className="mt-3 text-sm font-semibold text-fg">
             {status === 'STARTED'
               ? 'Worker Generating CSV Report...'
@@ -103,7 +103,7 @@ export function TripReportSection({ tripId, tripTitle }: TripReportSectionProps)
         <div className="mt-5 rounded-xl border border-line bg-surface-2/60 p-4 sm:p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary-soft-fg">
                 <CheckCircle2 className="size-5" aria-hidden />
               </span>
               <div>

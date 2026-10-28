@@ -5,89 +5,111 @@
 /* Design tokens. Components use the semantic names (bg-surface,       */
 /* text-fg-muted, ...) so light and dark themes only differ here.      */
 /* ------------------------------------------------------------------ */
+/* Brand: TripMind light sea-green #A1D99B on a deep forest-green dark theme.   */
+/* Dark is the signature look and the default; light keeps the same brand mint. */
 :root {
   color-scheme: light;
 
-  --bg: #f4f6f9;
+  --bg: #edf3ec;
   --surface: #ffffff;
-  --surface-2: #f1f4f8;
-  --line: #e2e8f0;
-  --line-strong: #cbd5e1;
+  --surface-2: #f0f5ef;
+  --surface-3: #e4ede3;
+  --line: #d9e4d8;
+  --line-strong: #bccdbb;
 
-  --fg: #0f172a;
-  --fg-muted: #475569;
-  --fg-subtle: #64748b;
+  --fg: #10201a;
+  --fg-muted: #445a4d;
+  --fg-subtle: #587063;
 
-  --primary: #0f766e;
-  --primary-hover: #115e59;
-  --primary-fg: #ffffff;
-  --primary-soft: #e3f4f1;
-  --primary-soft-fg: #0b5d56;
+  /* The brand mint is a fill. Text and icons on light surfaces use the deeper "ink". */
+  --primary: #a1d99b;
+  --primary-hover: #8dcd86;
+  --primary-fg: #0f2a18;
+  --primary-ink: #2c6b39;
+  --primary-soft: #e0f2dd;
+  --primary-soft-fg: #1f5b2d;
+  --primary-line: #a1d99b;
+
+  --sidebar: #ffffff;
+  --glow: rgb(161 217 155 / 0.35);
 
   --danger: #b42318;
   --danger-hover: #912018;
   --danger-fg: #ffffff;
-  --danger-soft: #fef3f2;
+  --danger-soft: #fef0ee;
   --danger-soft-fg: #b42318;
-  --danger-line: #fecdca;
+  --danger-line: #f6c4be;
 
-  --info-soft: #e8f0fe;
-  --info-soft-fg: #1d4ed8;
-  --success-soft: #e4f6ea;
-  --success-soft-fg: #166534;
-  --neutral-soft: #eceff4;
-  --neutral-soft-fg: #475569;
+  --info-soft: #e1f0f8;
+  --info-soft-fg: #1c5f82;
+  --success-soft: #e0f2dd;
+  --success-soft-fg: #1f5b2d;
+  --neutral-soft: #e8eee7;
+  --neutral-soft-fg: #4a5f52;
+  --warn-soft: #fdf3da;
+  --warn-soft-fg: #8a5a00;
 
-  --ring: #0f766e;
-  --skeleton: #e6eaf0;
-  --skeleton-shine: #f3f5f8;
+  --ring: #3f8f4c;
+  --skeleton: #e1eae0;
+  --skeleton-shine: #f0f5ef;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --bg: #0a111f;
-  --surface: #111a2c;
-  --surface-2: #17223a;
-  --line: #243049;
-  --line-strong: #34425f;
+  --bg: #0a120e;
+  --surface: #111c16;
+  --surface-2: #17261e;
+  --surface-3: #1d3025;
+  --line: #20332a;
+  --line-strong: #2f493b;
 
-  --fg: #e8edf6;
-  --fg-muted: #a6b3c8;
-  --fg-subtle: #8795ad;
+  --fg: #e9f2ea;
+  --fg-muted: #aabfb0;
+  --fg-subtle: #87a08f;
 
-  --primary: #2dd4bf;
-  --primary-hover: #5eead4;
-  --primary-fg: #04211e;
-  --primary-soft: #11332f;
-  --primary-soft-fg: #7ee8d7;
+  --primary: #a1d99b;
+  --primary-hover: #b7e5b1;
+  --primary-fg: #0b2013;
+  --primary-ink: #a1d99b;
+  --primary-soft: #1b3426;
+  --primary-soft-fg: #c1e8bc;
+  --primary-line: #a1d99b;
 
-  --danger: #f97066;
-  --danger-hover: #fda29b;
+  --sidebar: #0d1712;
+  --glow: rgb(161 217 155 / 0.16);
+
+  --danger: #f4796d;
+  --danger-hover: #f9a198;
   --danger-fg: #2b0a07;
-  --danger-soft: #2f1517;
-  --danger-soft-fg: #fda29b;
-  --danger-line: #5c2327;
+  --danger-soft: #2f1816;
+  --danger-soft-fg: #f9a198;
+  --danger-line: #5c2a26;
 
-  --info-soft: #14284d;
-  --info-soft-fg: #93b4ff;
-  --success-soft: #11301f;
-  --success-soft-fg: #86e0a5;
-  --neutral-soft: #1d2940;
-  --neutral-soft-fg: #a6b3c8;
+  --info-soft: #14303b;
+  --info-soft-fg: #9bd3ee;
+  --success-soft: #1b3426;
+  --success-soft-fg: #a1d99b;
+  --neutral-soft: #1c2c23;
+  --neutral-soft-fg: #aabfb0;
+  --warn-soft: #3a2f12;
+  --warn-soft-fg: #f0cf7a;
 
-  --ring: #2dd4bf;
-  --skeleton: #1b2740;
-  --skeleton-shine: #24334f;
+  --ring: #a1d99b;
+  --skeleton: #18281f;
+  --skeleton-shine: #22372b;
 }
 
 @theme inline {
+  --font-display: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-sidebar: var(--sidebar);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
 
@@ -98,6 +120,8 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-fg: var(--primary-fg);
+  --color-primary-ink: var(--primary-ink);
+  --color-primary-line: var(--primary-line);
   --color-primary-soft: var(--primary-soft);
   --color-primary-soft-fg: var(--primary-soft-fg);
 
@@ -114,15 +138,20 @@
   --color-success-soft-fg: var(--success-soft-fg);
   --color-neutral-soft: var(--neutral-soft);
   --color-neutral-soft-fg: var(--neutral-soft-fg);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-soft-fg: var(--warn-soft-fg);
 
-  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05), 0 1px 3px rgb(15 23 42 / 0.06);
-  --shadow-lift: 0 4px 12px rgb(15 23 42 / 0.08), 0 12px 28px rgb(15 23 42 / 0.1);
-  --shadow-pop: 0 10px 30px rgb(15 23 42 / 0.2);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.14), 0 8px 24px -12px rgb(0 0 0 / 0.28);
+  --shadow-lift: 0 4px 14px rgb(0 0 0 / 0.18), 0 18px 40px -14px rgb(0 0 0 / 0.38);
+  --shadow-pop: 0 18px 48px rgb(0 0 0 / 0.45);
+  --shadow-glow: 0 0 0 1px var(--glow), 0 10px 30px -10px var(--glow);
 
   --animate-shimmer: shimmer 1.6s ease-in-out infinite;
   --animate-toast-in: toast-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   --animate-dialog-in: dialog-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   --animate-fade-in: fade-in 0.25s ease-out;
+  --animate-rise: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-drawer-in: drawer-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
 
   @keyframes shimmer {
     0% {
@@ -152,6 +181,24 @@
       transform: none;
     }
   }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes drawer-in {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: none;
+    }
+  }
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -164,9 +211,22 @@
   }
 }
 
+/* Lives in the components layer so utilities such as p-0 or p-4 can override the default padding. */
+@layer components {
+  .tm-card {
+    padding: 1.25rem;
+  }
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
   }
 
   body {
@@ -185,7 +245,13 @@
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--primary) 28%, transparent);
+    background: color-mix(in srgb, var(--primary) 35%, transparent);
+  }
+
+  /* Slim, low-contrast scrollbars so the dark panels stay calm. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
   }
 
   /* Keep the number spinners from fighting the "$" prefix on the budget field. */

@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useForm, type UseFormSetError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Calendar, CircleAlert, DollarSign, MapPin, X } from 'lucide-react'
+import { Calendar, CircleAlert, Clock, MapPin, Timer, X } from 'lucide-react'
 import { ApiError } from '@/api/errors'
 import type { Activity, Trip } from '@/api/types'
 import { Button } from '@/components/ui/Button'
@@ -9,11 +9,17 @@ import { TextField } from '@/components/ui/TextField'
 import { useToast } from '@/components/ui/Toast'
 import { useCreateActivity, useUpdateActivity } from '@/hooks/useActivities'
 import { activityFormSchema, toActivityInput, type ActivityFormValues } from '@/lib/schema'
+import { currencySymbol, currencyName } from '@/lib/money'
+import { itineraryApi } from '@/api/itinerary'
+import { DURATION_PRESETS, conflictPartners, formatDuration } from '@/lib/itinerary'
+import { inputStyles } from '@/components/ui/TextField'
 
 interface ActivityDialogProps {
   open: boolean
   trip: Trip
   activity?: Activity | null
+  /** Pre-selects the date when adding from a specific day of the planner. */
+  defaultDate?: string
   onClose: () => void
 }
 
@@ -23,15 +29,21 @@ const DEFAULT_VALUES: ActivityFormValues = {
   cost: '0',
   location: '',
   description: '',
+  start_time: '',
+  duration_minutes: '',
 }
 
-export function ActivityDialog({ open, trip, activity, onClose }: ActivityDialogProps) {
+export function ActivityDialog({ open, trip, activity, defaultDate, onClose }: ActivityDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   const toast = useToast()
   const [serverError, setServerError] = useState<string | null>(null)
 
   const isEditing = Boolean(activity)
+  // Presets, plus whatever length an existing activity already has.
+  const durationOptions = Array.from(
+    new Set([...DURATION_PRESETS, ...(activity?.duration_minutes ? [activity.duration_minutes] : [])]),
+  ).sort((a, b) => a - b)
   const createActivity = useCreateActivity(trip.id)
   const updateActivity = useUpdateActivity(trip.id)
   const isSubmitting = createActivity.isPending || updateActivity.isPending
@@ -67,15 +79,31 @@ export function ActivityDialog({ open, trip, activity, onClose }: ActivityDialog
           cost: String(activity.cost),
           location: activity.location ?? '',
           description: activity.description ?? '',
+          start_time: activity.start_time?.slice(0, 5) ?? '',
+          duration_minutes: activity.duration_minutes ? String(activity.duration_minutes) : '',
         })
       } else {
         reset({
           ...DEFAULT_VALUES,
-          activity_date: trip.start_date,
+          activity_date: defaultDate ?? trip.start_date,
         })
       }
     }
-  }, [open, activity, trip.start_date, reset])
+  }, [open, activity, defaultDate, trip.start_date, reset])
+
+  /** Saving never blocks on a clash, but we tell the owner about it straight away. */
+  const warnAboutConflicts = async (saved: Activity) => {
+    if (!saved.start_time) return
+    try {
+      const itinerary = await itineraryApi.get(trip.id)
+      const partners = conflictPartners(itinerary, saved.id)
+      if (partners.length > 0) {
+        toast.info(`Heads up: “${saved.title}” overlaps with ${partners.map((p) => `“${p.title}”`).join(', ')}.`)
+      }
+    } catch {
+      // The warning is a courtesy; the save itself already succeeded.
+    }
+  }
 
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null)
@@ -91,11 +119,13 @@ export function ActivityDialog({ open, trip, activity, onClose }: ActivityDialog
     try {
       const input = toActivityInput(values)
       if (isEditing && activity) {
-        await updateActivity.mutateAsync({ activityId: activity.id, patch: input })
+        const saved = await updateActivity.mutateAsync({ activityId: activity.id, patch: input })
         toast.success(`Updated “${values.title}”`)
+        void warnAboutConflicts(saved)
       } else {
-        await createActivity.mutateAsync(input)
+        const saved = await createActivity.mutateAsync(input)
         toast.success(`Added “${values.title}”`)
+        void warnAboutConflicts(saved)
       }
       onClose()
     } catch (err) {
@@ -169,13 +199,51 @@ export function ActivityDialog({ open, trip, activity, onClose }: ActivityDialog
             inputMode="decimal"
             step="0.01"
             min="0"
-            prefix="$"
+            prefix={currencySymbol()}
             placeholder="0.00"
-            hint="In US dollars (0 for free)"
-            icon={<DollarSign className="size-4" />}
+            hint={`In ${currencyName()} (0 for free)`}
             error={errors.cost?.message}
             {...register('cost')}
           />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextField
+            label="Start time"
+            type="time"
+            step={300}
+            icon={<Clock className="size-4" />}
+            hint="Optional. Leave empty for “sometime that day”."
+            error={errors.start_time?.message}
+            {...register('start_time')}
+          />
+
+          <div>
+            <label htmlFor="activity-duration" className="mb-1.5 block text-sm font-medium text-fg">
+              Duration
+            </label>
+            <div className="relative">
+              <Timer className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-fg-subtle" aria-hidden />
+              <select
+                id="activity-duration"
+                aria-invalid={errors.duration_minutes ? true : undefined}
+                className={`${inputStyles} pl-9`}
+                {...register('duration_minutes')}
+              >
+                <option value="">Not set</option>
+                {durationOptions.map((minutes) => (
+                  <option key={minutes} value={minutes}>
+                    {formatDuration(minutes)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {errors.duration_minutes?.message ? (
+              <p className="mt-1.5 text-sm text-danger">{errors.duration_minutes.message}</p>
+            ) : (
+              <p className="mt-1.5 text-sm text-fg-subtle">Used to spot scheduling clashes.</p>
+            )}
+          </div>
         </div>
 
         <TextField
@@ -221,7 +289,7 @@ function applyApiError(error: unknown, setError: UseFormSetError<ActivityFormVal
   if (!(error instanceof ApiError)) return 'Something unexpected went wrong. Please try again.'
 
   const unmatched: string[] = [...error.formErrors]
-  const fields = ['title', 'activity_date', 'cost', 'location', 'description']
+  const fields = ['title', 'activity_date', 'cost', 'location', 'description', 'start_time', 'duration_minutes']
   let focused = false
 
   for (const [field, message] of Object.entries(error.fieldErrors)) {

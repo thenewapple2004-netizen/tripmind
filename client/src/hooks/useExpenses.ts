@@ -48,6 +48,7 @@ export function useCreateExpense(tripId: string) {
       })
       void queryClient.invalidateQueries({ queryKey: expenseKeys.all(tripId) })
       void queryClient.invalidateQueries({ queryKey: tripKeys.detail(tripId) })
+      void queryClient.invalidateQueries({ queryKey: ['owner'] })
     },
   })
 }
@@ -63,6 +64,7 @@ export function useUpdateExpense(tripId: string) {
       )
       void queryClient.invalidateQueries({ queryKey: expenseKeys.all(tripId) })
       void queryClient.invalidateQueries({ queryKey: tripKeys.detail(tripId) })
+      void queryClient.invalidateQueries({ queryKey: ['owner'] })
     },
   })
 }
@@ -77,6 +79,7 @@ export function useDeleteExpense(tripId: string) {
       )
       void queryClient.invalidateQueries({ queryKey: expenseKeys.all(tripId) })
       void queryClient.invalidateQueries({ queryKey: tripKeys.detail(tripId) })
+      void queryClient.invalidateQueries({ queryKey: ['owner'] })
     },
   })
 }

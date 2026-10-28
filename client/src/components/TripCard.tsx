@@ -21,9 +21,9 @@ export function TripCard({ trip }: { trip: Trip }) {
   return (
     <Link
       to={`/trips/${trip.id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lift"
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lift"
     >
-      <TripCover destination={trip.destination} className="flex h-36 flex-col justify-between p-4">
+      <TripCover destination={trip.destination} zoomOnHover className="flex h-40 flex-col justify-between p-4">
         <StatusBadge status={status} className="self-start shadow-sm" />
         <div>
           <p className="text-xl leading-tight font-semibold tracking-tight">{cityOf(trip.destination)}</p>
@@ -32,7 +32,7 @@ export function TripCard({ trip }: { trip: Trip }) {
       </TripCover>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <h3 className="line-clamp-2 font-semibold leading-snug text-fg group-hover:text-primary">
+        <h3 className="line-clamp-2 font-semibold leading-snug text-fg group-hover:text-primary-ink">
           {trip.title}
         </h3>
 
@@ -63,9 +63,9 @@ export function TripCardSkeleton() {
   return (
     <div
       role="presentation"
-      className="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-card"
+      className="flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-card"
     >
-      <Skeleton className="h-36 rounded-none" />
+      <Skeleton className="h-40 rounded-none" />
       <div className="flex flex-1 flex-col gap-3 p-4">
         <Skeleton className="h-5 w-4/5" />
         <div className="space-y-2">

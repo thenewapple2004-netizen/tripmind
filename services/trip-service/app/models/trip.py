@@ -35,6 +35,18 @@ class Trip(Base):
         cascade="all, delete-orphan",
         order_by="Expense.expense_date",
     )
+    checklist_items = relationship(
+        "ChecklistItem",
+        back_populates="trip",
+        cascade="all, delete-orphan",
+        order_by="ChecklistItem.position",
+    )
+    documents = relationship(
+        "TripDocument",
+        back_populates="trip",
+        cascade="all, delete-orphan",
+        order_by="TripDocument.uploaded_at",
+    )
 
     def __repr__(self):
         return f"<Trip(id={self.id}, user_id={self.user_id}, title='{self.title}')>"

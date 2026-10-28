@@ -6,9 +6,14 @@ export interface Activity {
   location?: string | null
   activity_date: string
   cost: number
+  /** Local start time, "HH:MM:SS" from the API (null when the activity has no set time). */
+  start_time?: string | null
+  duration_minutes?: number | null
+  /** Manual order within the day, for activities without a start time. */
+  position?: number
 }
 
-export type ActivityInput = Omit<Activity, 'id' | 'trip_id'>
+export type ActivityInput = Omit<Activity, 'id' | 'trip_id' | 'position'>
 export type ActivityPatch = Partial<ActivityInput>
 
 export type ExpenseCategory =
@@ -90,4 +95,66 @@ export interface OwnerProfile {
   email: string
   created_at: string
   source: string
+}
+
+// ─── Itinerary planner ──────────────────────────────────────────────────────
+
+export interface ItineraryDay {
+  date: string
+  day_number: number
+  activities: Activity[]
+  total_cost: number
+  scheduled_minutes: number
+}
+
+export interface ItineraryConflict {
+  activity_date: string
+  activity_ids: string[]
+  overlap_minutes: number
+}
+
+export interface Itinerary {
+  trip_id: string
+  start_date: string
+  end_date: string
+  total_activities: number
+  unscheduled_count: number
+  days: ItineraryDay[]
+  conflicts: ItineraryConflict[]
+}
+
+/** Where an activity should end up after a drag and drop. */
+export interface ActivityMove {
+  id: string
+  activity_date: string
+  position: number
+}
+
+// ─── Checklist & documents ──────────────────────────────────────────────────
+
+export type ChecklistCategory = 'documents' | 'packing' | 'bookings' | 'health' | 'other'
+
+export interface ChecklistItem {
+  id: string
+  trip_id: string
+  text: string
+  category: ChecklistCategory
+  is_done: boolean
+  position: number
+}
+
+export type DocumentKind = 'passport' | 'visa' | 'ticket' | 'booking' | 'insurance' | 'other'
+
+export interface TripDocument {
+  id: string
+  trip_id: string
+  filename: string
+  content_type: string
+  size_bytes: number
+  kind: DocumentKind
+  uploaded_at: string
+}
+
+export interface OwnerDocument extends TripDocument {
+  trip_title: string
 }

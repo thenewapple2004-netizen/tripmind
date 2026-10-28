@@ -18,11 +18,14 @@ from sqlalchemy.orm import Session
 from app.core.auth import get_current_user_id
 from app.core.database import get_db
 from app.models.schemas import (
+    DocumentResponse,
+    OwnerDocumentItem,
     OwnerDashboardResponse,
     OwnerReportHistoryItem,
     PaginatedOwnerActivities,
     PaginatedOwnerExpenses,
 )
+from app.services.document_service import document_service
 from app.services.owner_dashboard_service import owner_dashboard_service
 
 logger = logging.getLogger(__name__)
@@ -83,3 +86,15 @@ def get_owner_reports(
     """
     dashboard = owner_dashboard_service.get_owner_dashboard(db, user_id)
     return dashboard.reports_history
+
+
+@router.get("/documents", response_model=List[OwnerDocumentItem])
+def get_owner_documents(
+    db: Session = Depends(get_db),
+    user_id: UUID = Depends(get_current_user_id),
+):
+    """Every travel document across the authenticated owner's trips (metadata only)."""
+    return [
+        OwnerDocumentItem(**DocumentResponse.model_validate(doc).model_dump(), trip_title=title)
+        for doc, title in document_service.list_for_owner(db, user_id)
+    ]

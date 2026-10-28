@@ -5,6 +5,9 @@ from app.api.activities import router as activities_router
 from app.api.expenses import router as expenses_router
 from app.api.reports import router as reports_router
 from app.api.owner import router as owner_router
+from app.api.itinerary import router as itinerary_router
+from app.api.checklist import router as checklist_router
+from app.api.documents import router as documents_router
 from app.core.auth_service_client import close_http_client
 from app.core.config import settings
 from app.core.observability import (
@@ -51,6 +54,9 @@ app.include_router(activities_router, prefix="/api/v1")
 app.include_router(expenses_router, prefix="/api/v1")
 app.include_router(reports_router, prefix="/api/v1")
 app.include_router(owner_router, prefix="/api/v1")
+app.include_router(itinerary_router, prefix="/api/v1")
+app.include_router(checklist_router, prefix="/api/v1")
+app.include_router(documents_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])

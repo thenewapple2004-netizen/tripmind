@@ -36,8 +36,9 @@ export function useCreateActivity(tripId: string) {
           activities: [...current, activity].sort((a, b) => a.activity_date.localeCompare(b.activity_date)),
         }
       })
-      void queryClient.invalidateQueries({ queryKey: activityKeys.list(tripId) })
+      void queryClient.invalidateQueries({ queryKey: activityKeys.all(tripId) })
       void queryClient.invalidateQueries({ queryKey: tripKeys.detail(tripId) })
+      void queryClient.invalidateQueries({ queryKey: ['owner'] })
     },
   })
 }
@@ -65,8 +66,9 @@ export function useUpdateActivity(tripId: string) {
             .sort((a, b) => a.activity_date.localeCompare(b.activity_date)),
         }
       })
-      void queryClient.invalidateQueries({ queryKey: activityKeys.list(tripId) })
+      void queryClient.invalidateQueries({ queryKey: activityKeys.all(tripId) })
       void queryClient.invalidateQueries({ queryKey: tripKeys.detail(tripId) })
+      void queryClient.invalidateQueries({ queryKey: ['owner'] })
     },
   })
 }
@@ -87,8 +89,9 @@ export function useDeleteActivity(tripId: string) {
           activities: current.filter((item) => item.id !== activityId),
         }
       })
-      void queryClient.invalidateQueries({ queryKey: activityKeys.list(tripId) })
+      void queryClient.invalidateQueries({ queryKey: activityKeys.all(tripId) })
       void queryClient.invalidateQueries({ queryKey: tripKeys.detail(tripId) })
+      void queryClient.invalidateQueries({ queryKey: ['owner'] })
     },
   })
 }

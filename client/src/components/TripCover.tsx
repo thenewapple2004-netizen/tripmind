@@ -1,17 +1,18 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Plane } from 'lucide-react'
 import { cn } from '@/components/ui/cn'
+import { useDestinationPhoto } from '@/hooks/useDestinationPhoto'
 
 // Static strings so Tailwind can see every class. Stops are dark enough for white text.
 const GRADIENTS = [
-  'from-teal-600 to-cyan-800',
-  'from-indigo-600 to-violet-800',
-  'from-rose-600 to-orange-700',
-  'from-sky-600 to-blue-800',
-  'from-emerald-600 to-teal-800',
-  'from-fuchsia-600 to-purple-800',
-  'from-amber-600 to-rose-800',
-  'from-blue-600 to-indigo-800',
+  'from-teal-600 to-emerald-900',
+  'from-emerald-600 to-teal-900',
+  'from-cyan-700 to-slate-900',
+  'from-sky-600 to-teal-900',
+  'from-lime-700 to-emerald-900',
+  'from-green-600 to-cyan-900',
+  'from-amber-700 to-emerald-900',
+  'from-teal-700 to-sky-900',
 ]
 
 /** FNV-1a with a final mix, so similar names still land on different gradients. */
@@ -25,30 +26,56 @@ function hash(value: string): number {
 }
 
 /**
- * Decorative cover for a trip. The gradient is derived from the destination so the same
- * place always looks the same, without needing photos or an image service.
+ * Cover for a trip. Shows a destination photo (looked up from Wikipedia) when one exists;
+ * otherwise, or while it loads, a gradient derived from the destination so the same place
+ * always looks the same.
  */
 export function TripCover({
   destination,
   className,
   children,
+  zoomOnHover = false,
 }: {
   destination: string
   className?: string
   children?: ReactNode
+  /** Slowly scales the photo when an ancestor with the `group` class is hovered. */
+  zoomOnHover?: boolean
 }) {
   const gradient = GRADIENTS[hash(destination.toLowerCase()) % GRADIENTS.length]
+  const { data: photo } = useDestinationPhoto(destination)
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null)
+  const showPhoto = Boolean(photo) && loadedSrc === photo
+
   return (
     <div className={cn('relative isolate overflow-hidden bg-linear-to-br text-white', gradient, className)}>
+      {photo && (
+        <img
+          src={photo}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          onLoad={() => setLoadedSrc(photo)}
+          onError={() => setLoadedSrc(null)}
+          className={cn(
+            'absolute inset-0 -z-20 size-full object-cover opacity-0 transition duration-700',
+            showPhoto && 'opacity-100',
+            zoomOnHover && 'group-hover:scale-105',
+          )}
+        />
+      )}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_88%_8%,rgb(255_255_255/0.28),transparent_46%),linear-gradient(to_top,rgb(0_0_0/0.38),transparent_62%)]"
+        className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_88%_8%,rgb(255_255_255/0.2),transparent_46%),linear-gradient(to_top,rgb(4_14_8/0.78),rgb(4_14_8/0.18)_58%,transparent)]"
       />
-      <Plane
-        aria-hidden
-        strokeWidth={1.25}
-        className="absolute -right-4 -bottom-5 -z-10 size-32 -rotate-12 text-white/15"
-      />
+      {!showPhoto && (
+        <Plane
+          aria-hidden
+          strokeWidth={1.25}
+          className="absolute -right-4 -bottom-5 -z-10 size-32 -rotate-12 text-white/15"
+        />
+      )}
       {children}
     </div>
   )

@@ -7,11 +7,11 @@ interface BudgetOverviewProps {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Food: 'bg-amber-500',
-  Transportation: 'bg-blue-500',
-  Accommodation: 'bg-indigo-500',
-  Activities: 'bg-emerald-500',
-  Shopping: 'bg-pink-500',
+  Food: 'bg-amber-400',
+  Transportation: 'bg-sky-400',
+  Accommodation: 'bg-primary',
+  Activities: 'bg-teal-400',
+  Shopping: 'bg-rose-400',
   Other: 'bg-slate-400',
 }
 
@@ -24,7 +24,7 @@ export function BudgetOverview({ summary }: BudgetOverviewProps) {
       <div className="grid gap-4 sm:grid-cols-4">
         <div>
           <dt className="flex items-center gap-1.5 text-xs font-medium text-fg-subtle">
-            <Wallet className="size-3.5 text-primary" aria-hidden />
+            <Wallet className="size-3.5 text-primary-ink" aria-hidden />
             Total Budget
           </dt>
           <dd className="mt-1 text-2xl font-bold tracking-tight tabular-nums text-fg">
@@ -34,7 +34,7 @@ export function BudgetOverview({ summary }: BudgetOverviewProps) {
 
         <div>
           <dt className="flex items-center gap-1.5 text-xs font-medium text-fg-subtle">
-            <TrendingUp className="size-3.5 text-blue-500" aria-hidden />
+            <TrendingUp className="size-3.5 text-sky-500" aria-hidden />
             Total Spent
           </dt>
           <dd className="mt-1 text-2xl font-bold tracking-tight tabular-nums text-fg">
@@ -47,13 +47,13 @@ export function BudgetOverview({ summary }: BudgetOverviewProps) {
             {summary.is_over_budget ? (
               <AlertTriangle className="size-3.5 text-danger" aria-hidden />
             ) : (
-              <TrendingDown className="size-3.5 text-emerald-500" aria-hidden />
+              <TrendingDown className="size-3.5 text-primary-ink" aria-hidden />
             )}
             Remaining
           </dt>
           <dd
             className={`mt-1 text-2xl font-bold tracking-tight tabular-nums ${
-              summary.is_over_budget ? 'text-danger' : 'text-emerald-600 dark:text-emerald-400'
+              summary.is_over_budget ? 'text-danger' : 'text-primary-ink'
             }`}
           >
             {formatCurrency(summary.remaining_budget)}
@@ -65,7 +65,7 @@ export function BudgetOverview({ summary }: BudgetOverviewProps) {
             {summary.is_over_budget ? (
               <AlertTriangle className="size-3.5 text-danger" aria-hidden />
             ) : (
-              <CheckCircle2 className="size-3.5 text-primary" aria-hidden />
+              <CheckCircle2 className="size-3.5 text-primary-ink" aria-hidden />
             )}
             Budget Status
           </dt>

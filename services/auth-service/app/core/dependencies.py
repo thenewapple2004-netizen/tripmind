@@ -33,6 +33,7 @@ def get_current_user(
         raise credentials_exception
 
     user = user_repository.get_by_id(db, user_id)
-    if user is None:
+    # Tokens issued before the latest password change carry an older version.
+    if user is None or payload.get("ver", 0) != (user.token_version or 0):
         raise credentials_exception
     return user

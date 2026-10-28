@@ -6,6 +6,7 @@ import { ApiError } from '@/api/errors'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/TextField'
 import { tripFormSchema, type TripFormValues } from '@/lib/schema'
+import { currencySymbol, currencyName } from '@/lib/money'
 
 type FieldName = keyof TripFormValues
 const FIELDS: FieldName[] = ['title', 'destination', 'start_date', 'end_date', 'budget']
@@ -240,7 +241,7 @@ export function TripForm({
             size="sm"
             id="fill-demo-data-btn"
             data-testid="fill-demo-data-btn"
-            icon={<Sparkles className="size-3.5 text-primary" aria-hidden />}
+            icon={<Sparkles className="size-3.5 text-primary-ink" aria-hidden />}
             onClick={handleFillDemoData}
             className="self-end sm:self-auto"
             title="Auto-fill with new demo trip data"
@@ -306,8 +307,8 @@ export function TripForm({
         step="0.01"
         min="0"
         placeholder="0.00"
-        prefix="$"
-        hint="Total budget in US dollars."
+        prefix={currencySymbol()}
+        hint={`Total budget in ${currencyName()}.`}
         error={errors.budget?.message}
         {...register('budget')}
       />

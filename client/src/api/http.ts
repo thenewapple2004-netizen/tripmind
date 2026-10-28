@@ -7,13 +7,15 @@ const BASE_URL = '/api/v1'
 const TIMEOUT_MS = 10_000
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
   signal?: AbortSignal
   /** Skip attaching the Bearer token even if one is stored. */
   skipAuth?: boolean
   /** Provide an explicit Bearer token instead of reading from storage. */
   token?: string
+  /** How to read a successful response. Defaults to JSON. */
+  parseAs?: 'json' | 'blob'
 }
 
 let isRefreshing = false
@@ -54,15 +56,17 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, signal, skipAuth = false, token: explicitToken } = options
+  const { method = 'GET', body, signal, skipAuth = false, token: explicitToken, parseAs = 'json' } = options
   const timeout = AbortSignal.timeout(TIMEOUT_MS)
   const combined = signal ? AbortSignal.any([signal, timeout]) : timeout
 
   const token = explicitToken ?? (!skipAuth ? tokenStorage.getAccessToken() : null)
 
+  // A Blob (e.g. an image) is sent as-is with its own type; everything else is JSON.
+  const isBlob = typeof Blob !== 'undefined' && body instanceof Blob
   const headers: Record<string, string> = {
-    Accept: 'application/json',
-    ...(body !== undefined && { 'Content-Type': 'application/json' }),
+    Accept: parseAs === 'blob' ? '*/*' : 'application/json',
+    ...(body !== undefined && { 'Content-Type': isBlob ? body.type || 'application/octet-stream' : 'application/json' }),
     ...(token && { Authorization: `Bearer ${token}` }),
   }
 
@@ -71,7 +75,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     response = await fetch(`${BASE_URL}${path}`, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body === undefined ? undefined : isBlob ? body : JSON.stringify(body),
       signal: combined,
     })
   } catch (error) {
@@ -107,5 +111,6 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   }
 
   if (response.status === 204) return undefined as T
+  if (parseAs === 'blob') return (await response.blob()) as T
   return (await response.json()) as T
 }

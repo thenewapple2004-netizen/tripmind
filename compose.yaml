@@ -34,6 +34,7 @@ services:
       LOG_FORMAT: json
     volumes:
       - ./services/auth-service/app:/app/app
+      - ./services/auth-service/alembic:/app/alembic
     depends_on:
       postgres:
         condition: service_healthy

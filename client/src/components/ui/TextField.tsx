@@ -64,7 +64,7 @@ export function TextField({
           aria-describedby={describedBy}
           className={cn(
             error ? inputErrorStyles : inputStyles,
-            hasLeading && 'pl-9',
+            hasLeading && (prefix && !icon && prefix.length > 1 ? 'pl-14' : 'pl-9'),
             showPasswordToggle && 'pr-10',
           )}
           {...props}

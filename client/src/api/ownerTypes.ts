@@ -2,6 +2,7 @@
  * ownerTypes.ts
  * =============
  * TypeScript types mirroring the backend Owner Dashboard schemas (Task 17).
+ * Keep in sync with services/trip-service/app/models/schemas.py
  */
 
 export interface OwnerDashboardOverview {
@@ -21,15 +22,15 @@ export interface OwnerDashboardOverview {
 
 export interface OwnerCategoryExpense {
   category: string
-  total: number
+  total_amount: number  // ← backend uses total_amount
   count: number
   percentage: number
 }
 
 export interface OwnerSpendingTrend {
-  month: string
+  period: string  // e.g. "2026-07"  ← backend uses period, not month
   total_spent: number
-  expense_count: number
+  count: number   // ← backend uses count, not expense_count
 }
 
 export interface OwnerTripStatusDistribution {
@@ -47,10 +48,10 @@ export interface OwnerUpcomingTrip {
   budget: number
   total_spent: number
   remaining_budget: number
-  days_until_start: number
-  duration_days: number
+  percent_spent: number    // ← backend field name
   activity_count: number
-  expense_count: number
+  days_until_start: number
+  status: string
 }
 
 export interface OwnerRecentActivity {
@@ -62,6 +63,8 @@ export interface OwnerRecentActivity {
   activity_date: string
   cost: number
   description?: string | null
+  start_time?: string | null
+  duration_minutes?: number | null
 }
 
 export interface OwnerRecentExpense {

@@ -120,7 +120,7 @@ export function ExpenseSection({ trip }: ExpenseSectionProps) {
         </div>
       ) : expenses.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-line-strong bg-surface/50 p-10 text-center">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-primary-soft text-primary-ink">
             <Receipt className="size-6" aria-hidden />
           </div>
           <h3 className="mt-4 text-base font-semibold text-fg">

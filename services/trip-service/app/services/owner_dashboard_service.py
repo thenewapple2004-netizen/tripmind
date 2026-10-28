@@ -191,6 +191,8 @@ class OwnerDashboardService:
                     activity_date=act.activity_date,
                     cost=Decimal(str(act.cost)),
                     description=act.description,
+                    start_time=act.start_time,
+                    duration_minutes=act.duration_minutes,
                 )
                 for act, title in rec_act_rows
             ]
@@ -397,6 +399,8 @@ class OwnerDashboardService:
                 activity_date=act.activity_date,
                 cost=Decimal(str(act.cost)),
                 description=act.description,
+                start_time=act.start_time,
+                duration_minutes=act.duration_minutes,
             )
             for act, title in rows
         ]

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
-import { useNavigate, useParams } from 'react-router'
-import { CalendarDays, Hash, MapPin, Pencil, Trash2, Wallet } from 'lucide-react'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
+import { CalendarDays, CalendarRange, FolderLock, Hash, LayoutDashboard, ListChecks, MapPin, Pencil, Trash2, Wallet } from 'lucide-react'
 import { ApiError } from '@/api/errors'
 import { BackLink } from '@/components/PageHeader'
 import { TripCover } from '@/components/TripCover'
@@ -11,8 +11,14 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useToast } from '@/components/ui/Toast'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useChecklist } from '@/hooks/useChecklist'
+import { useDocuments } from '@/hooks/useDocuments'
+import { useItinerary } from '@/hooks/useItinerary'
 import { useDeleteTrip, useTrip } from '@/hooks/useTrips'
-import { ActivitySection } from '@/components/activities/ActivitySection'
+import { ChecklistPanel } from '@/components/planner/ChecklistPanel'
+import { DocumentsPanel } from '@/components/planner/DocumentsPanel'
+import { ItineraryPlanner } from '@/components/planner/ItineraryPlanner'
+import { TripTabs, type TabDef } from '@/components/planner/TripTabs'
 import { ExpenseSection } from '@/components/expenses/ExpenseSection'
 import { OwnerProfileCard } from '@/components/trips/OwnerProfileCard'
 import { TripReportSection } from '@/components/trips/TripReportSection'
@@ -26,6 +32,7 @@ import {
   getTripStatus,
   pluralize,
 } from '@/lib/trips'
+import { currencyName } from '@/lib/money'
 
 function InfoCard({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {
   return (
@@ -62,8 +69,26 @@ function DetailsSkeleton() {
   )
 }
 
+const TAB_IDS = ['overview', 'itinerary', 'checklist', 'documents'] as const
+type TabId = (typeof TAB_IDS)[number]
+
 export function TripDetailsPage() {
   const { tripId = '' } = useParams()
+  const [params, setParams] = useSearchParams()
+  const tab: TabId = TAB_IDS.includes(params.get('tab') as TabId) ? (params.get('tab') as TabId) : 'overview'
+  const selectTab = (next: string) =>
+    setParams(
+      (current) => {
+        const copy = new URLSearchParams(current)
+        if (next === 'overview') copy.delete('tab')
+        else copy.set('tab', next)
+        return copy
+      },
+      { replace: true },
+    )
+  const itinerary = useItinerary(tripId)
+  const checklist = useChecklist(tripId)
+  const documents = useDocuments(tripId)
   const navigate = useNavigate()
   const toast = useToast()
   const { data: trip, isPending, error, refetch, isFetching } = useTrip(tripId)
@@ -108,6 +133,32 @@ export function TripDetailsPage() {
   const days = getTripDays(trip)
   const perDay = trip.budget / days
   const progress = Math.round(getTripProgress(trip) * 100)
+
+  const checklistItems = checklist.data ?? []
+  const doneCount = checklistItems.filter((i) => i.is_done).length
+  const clashes = itinerary.data?.conflicts.length ?? 0
+  const tabs: TabDef[] = [
+    { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="size-4" /> },
+    {
+      id: 'itinerary',
+      label: 'Itinerary',
+      icon: <CalendarRange className="size-4" />,
+      badge: clashes > 0 ? `${clashes} ${clashes === 1 ? 'clash' : 'clashes'}` : itinerary.data ? String(itinerary.data.total_activities) : undefined,
+      badgeTone: clashes > 0 ? 'warn' : 'default',
+    },
+    {
+      id: 'checklist',
+      label: 'Checklist',
+      icon: <ListChecks className="size-4" />,
+      badge: checklistItems.length > 0 ? `${doneCount}/${checklistItems.length}` : undefined,
+    },
+    {
+      id: 'documents',
+      label: 'Documents',
+      icon: <FolderLock className="size-4" />,
+      badge: documents.data && documents.data.length > 0 ? String(documents.data.length) : undefined,
+    },
+  ]
 
   return (
     <div className="animate-fade-in">
@@ -157,6 +208,19 @@ export function TripDetailsPage() {
           </div>
         </header>
 
+        <TripTabs idPrefix="trip" tabs={tabs} active={tab} onChange={selectTab} />
+
+        <div
+          id={`trip-panel-${tab}`}
+          role="tabpanel"
+          aria-labelledby={`trip-tab-${tab}`}
+          className="space-y-5 sm:space-y-6"
+        >
+        {tab === 'itinerary' && <ItineraryPlanner trip={trip} />}
+        {tab === 'checklist' && <ChecklistPanel trip={trip} />}
+        {tab === 'documents' && <DocumentsPanel trip={trip} />}
+        {tab === 'overview' && (
+        <>
         <div className="grid gap-5 sm:gap-6 md:grid-cols-2">
           <InfoCard icon={<CalendarDays className="size-4" aria-hidden />} title="Schedule">
             <dl className="grid grid-cols-2 gap-x-4 gap-y-4">
@@ -189,18 +253,19 @@ export function TripDetailsPage() {
             <p className="text-3xl font-semibold tracking-tight tabular-nums text-fg">{formatCurrency(trip.budget)}</p>
             <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-line pt-4">
               <Fact label="Per day" value={formatCurrency(Math.round(perDay * 100) / 100)} />
-              <Fact label="Currency" value="US dollars" />
+              <Fact label="Currency" value={currencyName()} />
             </dl>
           </InfoCard>
         </div>
-
-        <ActivitySection trip={trip} />
 
         <ExpenseSection trip={trip} />
 
         <OwnerProfileCard tripId={trip.id} />
 
         <TripReportSection tripId={trip.id} tripTitle={trip.title} />
+        </>
+        )}
+        </div>
 
         <p className="flex items-center gap-1.5 px-1 text-xs text-fg-subtle">
           <Hash className="size-3.5" aria-hidden />
