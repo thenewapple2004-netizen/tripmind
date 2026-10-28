@@ -11,8 +11,8 @@
       // Apply the saved theme (dark forest-green by default) before first paint to avoid a flash.
       try {
         var saved = localStorage.getItem('tripmind-theme-v2')
-        var dark = saved ? saved === 'dark' : true
-        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        var known = ['dark', 'light', 'ocean', 'dusk', 'twilight', 'sand']
+        document.documentElement.dataset.theme = known.indexOf(saved) !== -1 ? saved : 'dark'
       } catch (e) {
         document.documentElement.dataset.theme = 'dark'
       }

@@ -14,7 +14,7 @@ Key ideas
 """
 
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 from typing import Dict, Iterable, List, Sequence, Tuple
 from uuid import UUID
 
@@ -30,6 +30,7 @@ from app.models.schemas import (
     ItineraryResponse,
 )
 from app.models.trip import Trip
+from app.services.booking_rules import reservation_events
 
 DEFAULT_DURATION_MINUTES = 60
 MAX_DAYS_SHOWN = 366  # a trip spanning years doesn't produce thousands of empty days
@@ -81,7 +82,7 @@ def find_conflicts(activities: Sequence[Activity]) -> List[ItineraryConflict]:
     return conflicts
 
 
-def build_itinerary(trip: Trip, activities: Sequence[Activity]) -> ItineraryResponse:
+def build_itinerary(trip: Trip, activities: Sequence[Activity], bookings: Sequence = ()) -> ItineraryResponse:
     by_day: Dict[date, List[Activity]] = defaultdict(list)
     for a in activities:
         by_day[a.activity_date].append(a)
@@ -89,6 +90,15 @@ def build_itinerary(trip: Trip, activities: Sequence[Activity]) -> ItineraryResp
     span = (trip.end_date - trip.start_date).days + 1
     dates = {trip.start_date + timedelta(days=i) for i in range(min(span, MAX_DAYS_SHOWN))}
     dates |= set(by_day)  # never hide an activity, even one outside the shown range
+
+    # Confirmed bookings are shown beside the activities, read-only. They never create, move or edit
+    # an activity; a reservation that lands outside the shown days is reported separately.
+    reservations: Dict[date, list] = defaultdict(list)
+    off_calendar: list = []
+    for booking in bookings:
+        for event in reservation_events(booking):
+            (reservations[event.date] if event.date in dates else off_calendar).append(event)
+    by_time = lambda e: (e.time is None, e.time or time(0, 0), e.title)  # noqa: E731
 
     days: List[ItineraryDay] = []
     for d in sorted(dates):
@@ -100,6 +110,7 @@ def build_itinerary(trip: Trip, activities: Sequence[Activity]) -> ItineraryResp
                 activities=[ActivityResponse.model_validate(a) for a in ordered],
                 total_cost=float(sum(float(a.cost or 0) for a in ordered)),
                 scheduled_minutes=sum(a.duration_minutes or 0 for a in ordered),
+                reservations=sorted(reservations.get(d, []), key=by_time),
             )
         )
 
@@ -111,6 +122,7 @@ def build_itinerary(trip: Trip, activities: Sequence[Activity]) -> ItineraryResp
         unscheduled_count=sum(1 for a in activities if a.start_time is None),
         days=days,
         conflicts=find_conflicts(activities),
+        off_calendar_reservations=sorted(off_calendar, key=lambda e: (e.date, by_time(e))),
     )
 
 

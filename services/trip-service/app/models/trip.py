@@ -41,6 +41,12 @@ class Trip(Base):
         cascade="all, delete-orphan",
         order_by="ChecklistItem.position",
     )
+    bookings = relationship(
+        "Booking",
+        back_populates="trip",
+        cascade="all, delete-orphan",
+        order_by="Booking.start_date",
+    )
     documents = relationship(
         "TripDocument",
         back_populates="trip",

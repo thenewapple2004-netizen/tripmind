@@ -26,3 +26,4 @@ class TripDocument(Base):
     data = deferred(Column(LargeBinary, nullable=False))
 
     trip = relationship("Trip", back_populates="documents")
+    bookings = relationship("Booking", secondary="booking_documents", back_populates="documents")

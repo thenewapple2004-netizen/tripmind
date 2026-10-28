@@ -5,6 +5,7 @@ import { LogoMark, Wordmark } from '@/components/ui/Logo'
 import { cn } from '@/components/ui/cn'
 import { useAuth } from '@/hooks/useAuth'
 import { useAppearance } from '@/hooks/useAppearance'
+import { isDarkTheme, quickSwitchLabel } from '@/lib/theme'
 import { NAV_ITEMS, isNavActive } from './nav'
 
 const rowBase =
@@ -54,6 +55,7 @@ export function SidebarContent({
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { theme, toggleTheme } = useAppearance()
+  const dark = isDarkTheme(theme)
   const { logout } = useAuth()
 
   const handleLogout = () => {
@@ -133,26 +135,26 @@ export function SidebarContent({
         <button
           type="button"
           role="switch"
-          aria-checked={theme === 'dark'}
+          aria-checked={dark}
           onClick={toggleTheme}
           className={cn(rowBase, 'text-fg-muted hover:bg-surface-2 hover:text-fg', collapsed && 'justify-center px-0')}
         >
           <Row
-            icon={theme === 'dark' ? Moon : Sun}
-            label={theme === 'dark' ? 'Dark mode' : 'Light mode'}
+            icon={dark ? Moon : Sun}
+            label={quickSwitchLabel(theme)}
             collapsed={collapsed}
             trailing={
               <span
                 aria-hidden
                 className={cn(
                   'relative h-5 w-9 rounded-full transition-colors',
-                  theme === 'dark' ? 'bg-primary' : 'bg-line-strong',
+                  dark ? 'bg-primary' : 'bg-line-strong',
                 )}
               >
                 <span
                   className={cn(
                     'absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow transition-transform',
-                    theme === 'dark' && 'translate-x-4 bg-primary-fg',
+                    dark && 'translate-x-4 bg-primary-fg',
                   )}
                 />
               </span>

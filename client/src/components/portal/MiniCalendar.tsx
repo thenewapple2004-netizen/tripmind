@@ -4,34 +4,26 @@ import { cn } from '@/components/ui/cn'
 import { parseISODate, toISODate } from '@/lib/trips'
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-const MAX_SPAN_DAYS = 400
 
 export interface CalendarTrip {
   start_date: string
   end_date: string
 }
 
-/** Every ISO day covered by the given trips (capped per trip so bad data can't hang the page). */
-function coveredDays(trips: CalendarTrip[]): { all: Set<string>; edges: Set<string> } {
-  const all = new Set<string>()
+/** Days on which a trip starts or ends. Whole trip spans are deliberately not shaded: with many
+ * overlapping trips almost every day would light up and the calendar would say nothing. */
+function tripEdges(trips: CalendarTrip[]): Set<string> {
   const edges = new Set<string>()
   for (const trip of trips) {
-    const start = parseISODate(trip.start_date)
-    const end = parseISODate(trip.end_date)
     edges.add(trip.start_date)
     edges.add(trip.end_date)
-    const cursor = new Date(start)
-    for (let i = 0; i < MAX_SPAN_DAYS && cursor <= end; i++) {
-      all.add(toISODate(cursor))
-      cursor.setDate(cursor.getDate() + 1)
-    }
   }
-  return { all, edges }
+  return edges
 }
 
 /**
- * Month calendar driven by real data: trip spans are tinted, trip start/end days are
- * emphasised and days with scheduled activities get a dot.
+ * Month calendar driven by real data. A small dot marks a day where something is planned: a trip
+ * starts or ends, or there is an activity. Pick a day to see exactly what it is.
  */
 export function MiniCalendar({
   trips,
@@ -51,7 +43,7 @@ export function MiniCalendar({
     return new Date(d.getFullYear(), d.getMonth(), 1)
   })
 
-  const { all: tripDays, edges } = useMemo(() => coveredDays(trips), [trips])
+  const edges = useMemo(() => tripEdges(trips), [trips])
 
   const days = useMemo(() => {
     const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1)
@@ -101,11 +93,12 @@ export function MiniCalendar({
         {days.map((d) => {
           const iso = toISODate(d)
           const inMonth = d.getMonth() === cursor.getMonth()
-          const inTrip = tripDays.has(iso)
-          const isEdge = edges.has(iso)
           const isSelected = iso === selected
           const isToday = iso === todayIso
           const hasActivity = activityDates.has(iso)
+          const hasTripEdge = edges.has(iso)
+          const planned = hasActivity || hasTripEdge
+          const parts = [hasTripEdge && 'a trip starts or ends', hasActivity && 'has activities'].filter(Boolean)
           return (
             <button
               key={iso}
@@ -114,32 +107,25 @@ export function MiniCalendar({
               aria-selected={isSelected}
               aria-current={isToday ? 'date' : undefined}
               aria-label={`${d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}${
-                inTrip ? ', trip' : ''
-              }${hasActivity ? ', has activities' : ''}`}
+                parts.length ? `, ${parts.join(' and ')}` : ''
+              }`}
               onClick={() => {
                 onSelect(iso)
                 if (!inMonth) setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
               }}
               className={cn(
-                'relative mx-auto flex h-8 w-full items-center justify-center text-xs tabular-nums transition',
-                inTrip && 'bg-primary-soft text-primary-soft-fg',
-                !inTrip && 'rounded-full',
-                inTrip && 'first:rounded-l-full last:rounded-r-full',
-                isEdge && 'rounded-full',
-                !inMonth && !isSelected && 'text-fg-subtle/60',
-                inMonth && !inTrip && 'text-fg-muted hover:bg-surface-2 hover:text-fg',
-                isToday && !isSelected && 'font-bold text-primary-ink ring-1 ring-primary/60 ring-inset',
-                isSelected && 'rounded-full bg-primary font-bold text-primary-fg shadow-glow',
+                'relative mx-auto flex size-9 flex-col items-center justify-center rounded-full text-xs tabular-nums transition',
+                !inMonth && !isSelected && 'text-fg-subtle/50',
+                inMonth && !isSelected && 'text-fg hover:bg-surface-3',
+                isToday && !isSelected && 'font-bold text-primary-ink ring-1 ring-primary/70 ring-inset',
+                isSelected && 'bg-primary font-bold text-primary-fg shadow-glow',
               )}
             >
               {d.getDate()}
-              {hasActivity && (
+              {planned && (
                 <span
                   aria-hidden
-                  className={cn(
-                    'absolute bottom-0.5 size-1 rounded-full',
-                    isSelected ? 'bg-primary-fg' : 'bg-primary',
-                  )}
+                  className={cn('absolute bottom-1 size-1 rounded-full', isSelected ? 'bg-primary-fg' : 'bg-primary')}
                 />
               )}
             </button>
@@ -147,14 +133,9 @@ export function MiniCalendar({
         })}
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-fg-subtle">
-        <span className="flex items-center gap-1.5">
-          <span aria-hidden className="h-2 w-4 rounded-full bg-primary-soft ring-1 ring-primary/40" /> Trip days
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span aria-hidden className="size-1.5 rounded-full bg-primary" /> Activity
-        </span>
-      </div>
+      <p className="mt-3 flex items-center gap-2 text-[11px] text-fg-subtle">
+        <span aria-hidden className="size-1.5 rounded-full bg-primary" />A dot means something is planned that day. Tap a day to see it.
+      </p>
     </div>
   )
 }

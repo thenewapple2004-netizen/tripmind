@@ -6,6 +6,7 @@ import {
   FileSpreadsheet,
   FolderLock,
   Sparkles,
+  Ticket,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -23,6 +24,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/portal', label: 'Overview', icon: LayoutDashboard },
   { to: '/', label: 'My Trips', icon: Luggage, matchPrefixes: ['/trips'] },
   { to: '/itinerary', label: 'Itinerary', icon: CalendarDays },
+  { to: '/bookings', label: 'Bookings', icon: Ticket },
   { to: '/expenses', label: 'Expenses', icon: Receipt },
   { to: '/reports', label: 'Reports', icon: FileSpreadsheet },
   { to: '/documents', label: 'Documents', icon: FolderLock },

@@ -38,13 +38,13 @@ export function QuickTiles({ overview }: { overview: OwnerDashboardOverview | un
       <li>
         <Link
           to="/expenses"
-          className={cn(tile, 'h-full flex-row items-center justify-start gap-3 border border-line bg-surface text-fg hover:border-primary/40')}
+          className={cn(tile, 'h-full border border-line bg-surface text-fg hover:border-primary/40')}
         >
           <ProgressRing
             value={hasBudget ? used : 0}
             danger={overview?.is_over_budget}
-            size={76}
-            stroke={7}
+            size={60}
+            stroke={6}
             label={hasBudget ? `${Math.round(used)} percent of budget used` : 'No budget set'}
           >
             <span className="font-display text-sm font-bold tabular-nums">{hasBudget ? `${Math.round(used)}%` : '—'}</span>
@@ -53,7 +53,7 @@ export function QuickTiles({ overview }: { overview: OwnerDashboardOverview | un
           <span className="min-w-0 text-xs text-fg-subtle">
             {hasBudget && overview ? (
               <>
-                <span className="block font-display text-base font-bold text-fg tabular-nums">
+                <span className="block truncate font-display text-base font-bold text-fg tabular-nums">
                   {formatCompactCurrency(Math.abs(overview.remaining_budget))}
                 </span>
                 {overview.is_over_budget ? 'over budget' : 'left to spend'}

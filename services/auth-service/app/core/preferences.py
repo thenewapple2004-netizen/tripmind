@@ -15,7 +15,7 @@ TRAVEL_INTERESTS = (
 
 TRAVEL_PACES = ("relaxed", "balanced", "packed")
 BUDGET_STYLES = ("budget", "mid_range", "luxury")
-THEMES = ("dark", "light")
+THEMES = ("dark", "light", "ocean", "dusk", "twilight", "sand")
 
 MAX_INTERESTS = len(TRAVEL_INTERESTS)
 

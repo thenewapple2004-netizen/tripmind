@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
-import { CalendarDays, CalendarRange, FolderLock, Hash, LayoutDashboard, ListChecks, MapPin, Pencil, Trash2, Wallet } from 'lucide-react'
+import { CalendarDays, CalendarRange, FolderLock, Hash, LayoutDashboard, ListChecks, MapPin, Pencil, Ticket, Trash2, Wallet } from 'lucide-react'
 import { ApiError } from '@/api/errors'
 import { BackLink } from '@/components/PageHeader'
 import { TripCover } from '@/components/TripCover'
@@ -11,10 +11,12 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useToast } from '@/components/ui/Toast'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useTripBookings } from '@/hooks/useBookings'
 import { useChecklist } from '@/hooks/useChecklist'
 import { useDocuments } from '@/hooks/useDocuments'
 import { useItinerary } from '@/hooks/useItinerary'
 import { useDeleteTrip, useTrip } from '@/hooks/useTrips'
+import { TripBookingsPanel } from '@/components/bookings/TripBookingsPanel'
 import { ChecklistPanel } from '@/components/planner/ChecklistPanel'
 import { DocumentsPanel } from '@/components/planner/DocumentsPanel'
 import { ItineraryPlanner } from '@/components/planner/ItineraryPlanner'
@@ -69,7 +71,7 @@ function DetailsSkeleton() {
   )
 }
 
-const TAB_IDS = ['overview', 'itinerary', 'checklist', 'documents'] as const
+const TAB_IDS = ['overview', 'itinerary', 'bookings', 'checklist', 'documents'] as const
 type TabId = (typeof TAB_IDS)[number]
 
 export function TripDetailsPage() {
@@ -89,6 +91,7 @@ export function TripDetailsPage() {
   const itinerary = useItinerary(tripId)
   const checklist = useChecklist(tripId)
   const documents = useDocuments(tripId)
+  const bookings = useTripBookings(tripId)
   const navigate = useNavigate()
   const toast = useToast()
   const { data: trip, isPending, error, refetch, isFetching } = useTrip(tripId)
@@ -145,6 +148,12 @@ export function TripDetailsPage() {
       icon: <CalendarRange className="size-4" />,
       badge: clashes > 0 ? `${clashes} ${clashes === 1 ? 'clash' : 'clashes'}` : itinerary.data ? String(itinerary.data.total_activities) : undefined,
       badgeTone: clashes > 0 ? 'warn' : 'default',
+    },
+    {
+      id: 'bookings',
+      label: 'Bookings',
+      icon: <Ticket className="size-4" />,
+      badge: bookings.data && bookings.data.length > 0 ? String(bookings.data.length) : undefined,
     },
     {
       id: 'checklist',
@@ -217,6 +226,7 @@ export function TripDetailsPage() {
           className="space-y-5 sm:space-y-6"
         >
         {tab === 'itinerary' && <ItineraryPlanner trip={trip} />}
+        {tab === 'bookings' && <TripBookingsPanel trip={trip} />}
         {tab === 'checklist' && <ChecklistPanel trip={trip} />}
         {tab === 'documents' && <DocumentsPanel trip={trip} />}
         {tab === 'overview' && (

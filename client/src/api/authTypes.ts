@@ -6,7 +6,7 @@ export interface User {
 
 export type TravelPace = 'relaxed' | 'balanced' | 'packed'
 export type BudgetStyle = 'budget' | 'mid_range' | 'luxury'
-export type ThemePreference = 'dark' | 'light'
+export type ThemePreference = 'dark' | 'light' | 'ocean' | 'dusk' | 'twilight' | 'sand'
 
 /** The signed-in owner's full account profile, as returned by the Auth Service `/auth/me`. */
 export interface Profile extends User {

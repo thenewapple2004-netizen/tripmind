@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider } from '@/hooks/useAuth'
 import { shouldRetry } from '@/hooks/useTrips'
+import { BookingsPage } from '@/pages/BookingsPage'
 import { CreateTripPage } from '@/pages/CreateTripPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DocumentsPage } from '@/pages/DocumentsPage'
@@ -78,6 +79,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <OwnerPortalPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'bookings',
+        element: (
+          <ProtectedRoute>
+            <BookingsPage />
           </ProtectedRoute>
         ),
       },

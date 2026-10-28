@@ -24,8 +24,8 @@ export function SpendingTrendCard({ trends }: { trends: OwnerSpendingTrend[] }) 
             <AreaChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
               <defs>
                 <linearGradient id="spendFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#a1d99b" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="#a1d99b" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 6" stroke="var(--line)" vertical={false} />
@@ -42,10 +42,10 @@ export function SpendingTrendCard({ trends }: { trends: OwnerSpendingTrend[] }) 
                 type="monotone"
                 dataKey="total_spent"
                 name="Spent"
-                stroke="#a1d99b"
+                stroke="var(--primary)"
                 strokeWidth={2.5}
                 fill="url(#spendFill)"
-                dot={{ fill: '#a1d99b', strokeWidth: 0, r: 3 }}
+                dot={{ fill: 'var(--primary)', strokeWidth: 0, r: 3 }}
                 activeDot={{ r: 5, strokeWidth: 0 }}
               />
             </AreaChart>

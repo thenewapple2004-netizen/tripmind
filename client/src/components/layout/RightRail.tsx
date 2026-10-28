@@ -28,11 +28,11 @@ import { useOwnerActivities, useOwnerDashboard } from '@/hooks/useOwnerDashboard
 import { useTrips } from '@/hooks/useTrips'
 import { useIdentity } from '@/hooks/useProfile'
 import {
-  cityOf,
   formatDate,
   formatDateRange,
   formatLongDate,
   getTimingLabel,
+  getTripDays,
   getTripStatus,
   parseISODate,
   pluralize,
@@ -105,6 +105,22 @@ function buildReminders(trips: Trip[], upcoming: OwnerUpcomingTrip[]): Reminder[
     }
   }
   return items.slice(0, 4)
+}
+
+/** "start" or "end" when the day is the trip's first or last day (a one-day trip counts as a start). */
+function edgeOf(trip: Trip, day: string): 'start' | 'end' | null {
+  if (trip.start_date === day) return 'start'
+  if (trip.end_date === day) return 'end'
+  return null
+}
+
+/** What this trip is doing on the given day: "Starts", "Ends", or "Day 3 of 7". */
+function tripDayLabel(trip: Trip, day: string): string {
+  const edge = edgeOf(trip, day)
+  if (edge === 'start') return 'Starts'
+  if (edge === 'end') return 'Ends'
+  const dayNumber = Math.round((parseISODate(day).getTime() - parseISODate(trip.start_date).getTime()) / 86_400_000) + 1
+  return `Day ${dayNumber} of ${getTripDays(trip)}`
 }
 
 function RailSkeleton() {
@@ -186,7 +202,14 @@ export function RightRail({ className }: { className?: string }) {
     [activities, todayIso],
   )
   const selectedActivities = activities.filter((a) => isoDay(a.activity_date) === selected)
-  const selectedTrips = trips.filter((t) => t.start_date <= selected && t.end_date >= selected)
+  // Trips starting or ending on the chosen day come first; the rest are "under way" and capped so a
+  // busy calendar doesn't push everything else off the screen.
+  const selectedTrips = trips
+    .filter((t) => t.start_date <= selected && t.end_date >= selected)
+    .sort((a, b) => Number(edgeOf(b, selected) !== null) - Number(edgeOf(a, selected) !== null))
+  const MAX_TRIPS_SHOWN = 3
+  const shownTrips = selectedTrips.slice(0, MAX_TRIPS_SHOWN)
+  const hiddenTrips = selectedTrips.length - shownTrips.length
 
   const loading = dashboard.isPending && tripsQuery.isPending
 
@@ -208,21 +231,31 @@ export function RightRail({ className }: { className?: string }) {
                 {selected === todayIso && <span className="ml-2 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] text-primary-soft-fg">Today</span>}
               </p>
               {selectedTrips.length === 0 && selectedActivities.length === 0 ? (
-                <p className="text-xs text-fg-subtle">Nothing scheduled for this day.</p>
+                <p className="text-xs text-fg-subtle">Nothing planned for this day.</p>
               ) : (
                 <ul className="space-y-1">
-                  {selectedTrips.map((t) => (
+                  {shownTrips.map((t) => (
                     <li key={t.id}>
                       <Link
                         to={`/trips/${t.id}`}
-                        className="flex items-center gap-2 rounded-xl bg-primary-soft/60 px-3 py-2 text-xs font-medium text-primary-soft-fg transition hover:bg-primary-soft"
+                        className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2 text-xs transition hover:bg-surface-3"
                       >
-                        <Luggage className="size-3.5 shrink-0" aria-hidden />
-                        <span className="truncate">{t.title}</span>
-                        <span className="ml-auto shrink-0 text-fg-subtle">{cityOf(t.destination)}</span>
+                        <Luggage className="size-3.5 shrink-0 text-primary-ink" aria-hidden />
+                        <span className="min-w-0 flex-1 truncate font-medium text-fg">{t.title}</span>
+                        <span className="shrink-0 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-semibold text-primary-soft-fg">
+                          {tripDayLabel(t, selected)}
+                        </span>
                       </Link>
                     </li>
                   ))}
+                  {hiddenTrips > 0 && (
+                    <li className="px-3 pb-1 text-[11px] text-fg-subtle">
+                      +{hiddenTrips} more {hiddenTrips === 1 ? 'trip' : 'trips'} under way.{' '}
+                      <Link to="/" className="font-medium text-primary-ink hover:underline">
+                        See all
+                      </Link>
+                    </li>
+                  )}
                   {selectedActivities.map((a) => (
                     <ActivityRow key={a.id} activity={a} />
                   ))}

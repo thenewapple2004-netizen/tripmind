@@ -6,6 +6,7 @@ import { cn } from '@/components/ui/cn'
 import { conflictPartners, formatDuration, isTimed } from '@/lib/itinerary'
 import { formatCurrency, parseISODate } from '@/lib/trips'
 import { ActivityRow, type RowActions } from './ActivityRow'
+import { ReservationRow } from './ReservationRow'
 
 interface DayCardProps extends RowActions {
   day: ItineraryDay
@@ -110,7 +111,7 @@ export function DayCard({
               {isToday && <span className="ml-2 rounded-full bg-primary-soft px-2 py-0.5 align-middle text-[10px] font-semibold text-primary-soft-fg">Today</span>}
             </h3>
             <p className="flex flex-wrap items-center gap-x-3 text-xs text-fg-subtle">
-              <span>{day.activities.length === 0 ? 'Nothing planned' : `${day.activities.length} ${day.activities.length === 1 ? 'activity' : 'activities'}`}</span>
+              <span>{day.activities.length === 0 ? (day.reservations.length > 0 ? 'No activities' : 'Nothing planned') : `${day.activities.length} ${day.activities.length === 1 ? 'activity' : 'activities'}`}</span>
               {day.total_cost > 0 && <span className="tabular-nums">{formatCurrency(day.total_cost)}</span>}
               {day.scheduled_minutes > 0 && (
                 <span className="flex items-center gap-1 tabular-nums">
@@ -131,6 +132,14 @@ export function DayCard({
           Add
         </Button>
       </header>
+
+      {day.reservations.length > 0 && (
+        <ul aria-label={`Reservations on day ${day.day_number}`} className="mb-3 space-y-2">
+          {day.reservations.map((r) => (
+            <ReservationRow key={`${r.booking_id}-${r.label}`} reservation={r} />
+          ))}
+        </ul>
+      )}
 
       {day.activities.length === 0 ? (
         <div

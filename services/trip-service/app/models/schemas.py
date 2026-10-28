@@ -1,4 +1,6 @@
+import re
 from decimal import Decimal
+import datetime as dt
 from datetime import date, datetime, time
 from typing import List, Literal, Optional
 from uuid import UUID
@@ -188,6 +190,7 @@ class ItineraryDay(BaseModel):
     activities: List[ActivityResponse]
     total_cost: float
     scheduled_minutes: int
+    reservations: List["ItineraryReservation"] = Field(default_factory=list)
 
 
 class ItineraryResponse(BaseModel):
@@ -198,6 +201,8 @@ class ItineraryResponse(BaseModel):
     unscheduled_count: int
     days: List[ItineraryDay]
     conflicts: List[ItineraryConflict]
+    # Confirmed reservations that fall on a date outside the shown days (e.g. a flight the night before).
+    off_calendar_reservations: List["ItineraryReservation"] = Field(default_factory=list)
 
 
 # ==========================================
@@ -479,3 +484,243 @@ class PaginatedOwnerExpenses(BaseModel):
     page_size: int
     total_pages: int
 
+
+
+# ==========================================
+# Booking schemas
+# ==========================================
+
+from typing import Any, Dict  # noqa: E402  (kept next to the schemas that use them)
+
+from app.core.currencies import CURRENCIES  # noqa: E402
+
+BOOKING_TYPES = ("flight", "hotel", "transportation", "activity")
+BOOKING_STATUSES = ("pending", "confirmed", "cancelled", "completed")
+MAX_BOOKING_DOCUMENTS = 10
+MAX_BOOKING_COST = 99_999_999.99
+
+# Fields an update may clear by sending null; every other field must keep a value.
+BOOKING_NULLABLE = frozenset({
+    "provider", "confirmation_number", "start_time", "end_date", "end_time", "location",
+    "notes", "cancellation_policy", "free_cancellation_until",
+})
+
+_CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+
+def clean_text(value: Optional[str], *, multiline: bool = False) -> Optional[str]:
+    """Trims text, refuses control characters, and turns blank into None (clears the field)."""
+    if value is None:
+        return None
+    value = value.strip()
+    if _CONTROL.search(value):
+        raise ValueError("Contains characters that aren't allowed")
+    if not multiline and ("\n" in value or "\r" in value):
+        raise ValueError("Must be a single line")
+    return value or None
+
+
+class BookingFields(BaseModel):
+    """What the owner enters. Rules that depend on the booking type (a flight needs airports, a
+    hotel needs a check-out date) live in `booking_rules`, so they can name the exact field at fault."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal[BOOKING_TYPES]  # type: ignore[valid-type]
+    status: Literal[BOOKING_STATUSES] = "pending"  # type: ignore[valid-type]
+    title: str = Field(..., min_length=1, max_length=150)
+    provider: Optional[str] = Field(None, max_length=120)
+    confirmation_number: Optional[str] = Field(None, max_length=60)
+
+    start_date: date
+    start_time: Optional[time] = None
+    end_date: Optional[date] = None
+    end_time: Optional[time] = None
+    location: Optional[str] = Field(None, max_length=200)
+
+    total_cost: float = Field(0.0, ge=0, le=MAX_BOOKING_COST)
+    currency: str = "USD"
+    notes: Optional[str] = Field(None, max_length=2000)
+
+    cancellation_policy: Optional[str] = Field(None, max_length=1000)
+    free_cancellation_until: Optional[date] = None
+
+    details: Dict[str, Any] = Field(default_factory=dict)
+    # Existing documents of the same trip to attach. Files are never copied, only linked.
+    document_ids: List[UUID] = Field(default_factory=list, max_length=MAX_BOOKING_DOCUMENTS)
+
+    @field_validator("title")
+    @classmethod
+    def _title(cls, value):
+        value = clean_text(value)
+        if not value:
+            raise ValueError("Give the booking a title")
+        return value
+
+    @field_validator("provider", "confirmation_number", "location")
+    @classmethod
+    def _single_line(cls, value):
+        return clean_text(value)
+
+    @field_validator("notes", "cancellation_policy")
+    @classmethod
+    def _multi_line(cls, value):
+        return clean_text(value, multiline=True)
+
+    @field_validator("start_time", "end_time")
+    @classmethod
+    def _whole_minutes(cls, value):
+        return value.replace(second=0, microsecond=0, tzinfo=None) if value else value
+
+    @field_validator("currency")
+    @classmethod
+    def _currency(cls, value):
+        value = value.strip().upper()
+        if value not in CURRENCIES:
+            raise ValueError("Unsupported currency")
+        return value
+
+
+class BookingCreate(BookingFields):
+    pass
+
+
+class BookingUpdate(BaseModel):
+    """Every field optional: only what is sent changes. `details` replaces the whole details object."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: Optional[Literal[BOOKING_TYPES]] = None  # type: ignore[valid-type]
+    status: Optional[Literal[BOOKING_STATUSES]] = None  # type: ignore[valid-type]
+    title: Optional[str] = Field(None, min_length=1, max_length=150)
+    provider: Optional[str] = Field(None, max_length=120)
+    confirmation_number: Optional[str] = Field(None, max_length=60)
+    start_date: Optional[date] = None
+    start_time: Optional[time] = None
+    end_date: Optional[date] = None
+    end_time: Optional[time] = None
+    location: Optional[str] = Field(None, max_length=200)
+    total_cost: Optional[float] = Field(None, ge=0, le=MAX_BOOKING_COST)
+    currency: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=2000)
+    cancellation_policy: Optional[str] = Field(None, max_length=1000)
+    free_cancellation_until: Optional[date] = None
+    details: Optional[Dict[str, Any]] = None
+    document_ids: Optional[List[UUID]] = Field(None, max_length=MAX_BOOKING_DOCUMENTS)
+
+    @field_validator("title")
+    @classmethod
+    def _title(cls, value):
+        if value is None:
+            return value
+        value = clean_text(value)
+        if not value:
+            raise ValueError("Give the booking a title")
+        return value
+
+    @field_validator("provider", "confirmation_number", "location")
+    @classmethod
+    def _single_line(cls, value):
+        return clean_text(value)
+
+    @field_validator("notes", "cancellation_policy")
+    @classmethod
+    def _multi_line(cls, value):
+        return clean_text(value, multiline=True)
+
+    @field_validator("start_time", "end_time")
+    @classmethod
+    def _whole_minutes(cls, value):
+        return value.replace(second=0, microsecond=0, tzinfo=None) if value else value
+
+    @field_validator("currency")
+    @classmethod
+    def _currency(cls, value):
+        if value is None:
+            return value
+        value = value.strip().upper()
+        if value not in CURRENCIES:
+            raise ValueError("Unsupported currency")
+        return value
+
+    @model_validator(mode="after")
+    def _no_nulls(self):
+        for name in self.model_fields_set:
+            if getattr(self, name) is None and name not in BOOKING_NULLABLE:
+                raise ValueError(f"{name} cannot be null")
+        return self
+
+
+class BookingResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    trip_id: UUID
+    type: str
+    status: str
+    title: str
+    provider: Optional[str] = None
+    confirmation_number: Optional[str] = None
+    start_date: date
+    start_time: Optional[time] = None
+    end_date: Optional[date] = None
+    end_time: Optional[time] = None
+    location: Optional[str] = None
+    total_cost: float
+    currency: str
+    notes: Optional[str] = None
+    cancellation_policy: Optional[str] = None
+    free_cancellation_until: Optional[date] = None
+    details: Dict[str, Any] = Field(default_factory=dict)
+    documents: List[DocumentResponse] = Field(default_factory=list)
+    created_at: datetime
+    updated_at: datetime
+    # True when the booking starts or ends outside the trip's own dates (often a flight the night before).
+    outside_trip_dates: bool = False
+
+
+class OwnerBookingItem(BookingResponse):
+    trip_title: str
+    trip_destination: str
+
+
+class PaginatedOwnerBookings(BaseModel):
+    items: List[OwnerBookingItem]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class BookingCostTotal(BaseModel):
+    currency: str
+    total: float
+
+
+class BookingSummary(BaseModel):
+    total: int
+    upcoming_count: int
+    by_status: Dict[str, int]
+    by_type: Dict[str, int]
+    # What upcoming pending/confirmed bookings add up to. Never mixed across currencies.
+    upcoming_cost: List[BookingCostTotal]
+
+
+class ItineraryReservation(BaseModel):
+    """A confirmed booking's moment on a particular day, shown read-only beside the activities."""
+
+    booking_id: UUID
+    type: str
+    status: str
+    title: str
+    provider: Optional[str] = None
+    confirmation_number: Optional[str] = None
+    location: Optional[str] = None
+    label: str
+    # `dt.` because a field named `time` would otherwise shadow the `time` type in its own annotation.
+    date: dt.date
+    time: Optional[dt.time] = None
+
+
+ItineraryDay.model_rebuild()
+ItineraryResponse.model_rebuild()

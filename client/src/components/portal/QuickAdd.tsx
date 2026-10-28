@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { CalendarPlus, ChevronDown, Luggage, Plus, ReceiptText, X } from 'lucide-react'
+import { CalendarPlus, ChevronDown, Luggage, Plus, ReceiptText, Ticket, X } from 'lucide-react'
 import type { Trip } from '@/api/types'
 import { ActivityDialog } from '@/components/activities/ActivityDialog'
 import { ExpenseDialog } from '@/components/expenses/ExpenseDialog'
@@ -208,6 +208,10 @@ export function QuickAddMenu() {
           <Link to="/trips/new" role="menuitem" className={item} onClick={() => setMenuOpen(false)}>
             <Luggage className="size-4 text-primary-ink" aria-hidden />
             New trip
+          </Link>
+          <Link to="/bookings?new=1" role="menuitem" className={item} onClick={() => setMenuOpen(false)}>
+            <Ticket className="size-4 text-primary-ink" aria-hidden />
+            New booking
           </Link>
           {(['activity', 'expense'] as const).map((k) => (
             <button

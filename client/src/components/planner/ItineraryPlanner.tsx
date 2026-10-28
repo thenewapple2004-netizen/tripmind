@@ -14,6 +14,7 @@ import { useArrangeActivities, useItinerary } from '@/hooks/useItinerary'
 import { computeMoveToDay, computeMoves, computeNudge, formatClock, formatDuration, isTimed, toMinutes } from '@/lib/itinerary'
 import { formatCurrency, toISODate } from '@/lib/trips'
 import { DayCard } from './DayCard'
+import { ReservationRow } from './ReservationRow'
 import { TripCalendar } from './TripCalendar'
 
 function Stat({ icon, label, value, helper, tone = 'default' }: { icon: React.ReactNode; label: string; value: string; helper: string; tone?: 'default' | 'warn' }) {
@@ -138,7 +139,7 @@ export function ItineraryPlanner({ trip }: { trip: Trip }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-display text-xl font-extrabold tracking-tight text-fg">Itinerary</h2>
-          <p className="mt-1 text-sm text-fg-muted">Plan each day, set times, and drag activities between days.</p>
+          <p className="mt-1 text-sm text-fg-muted">Plan each day, set times, and drag activities between days. Confirmed bookings appear on their days too.</p>
         </div>
         <Button variant="primary" icon={<CalendarPlus className="size-4" aria-hidden />} onClick={() => setDialog({ activity: null })}>
           Add activity
@@ -179,6 +180,18 @@ export function ItineraryPlanner({ trip }: { trip: Trip }) {
                 </li>
               )
             })}
+          </ul>
+        </div>
+      )}
+
+      {itinerary.off_calendar_reservations.length > 0 && (
+        <div className="rounded-2xl border border-line bg-surface p-4">
+          <p className="text-sm font-semibold text-fg">Reservations outside the trip dates</p>
+          <p className="mb-2 text-xs text-fg-subtle">Confirmed bookings that fall before or after the days below, such as a flight the night before.</p>
+          <ul className="grid gap-2 @2xl:grid-cols-2">
+            {itinerary.off_calendar_reservations.map((r) => (
+              <ReservationRow key={`${r.booking_id}-${r.label}`} reservation={r} showDate />
+            ))}
           </ul>
         </div>
       )}

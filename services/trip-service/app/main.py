@@ -8,6 +8,7 @@ from app.api.owner import router as owner_router
 from app.api.itinerary import router as itinerary_router
 from app.api.checklist import router as checklist_router
 from app.api.documents import router as documents_router
+from app.api.bookings import router as bookings_router
 from app.core.auth_service_client import close_http_client
 from app.core.config import settings
 from app.core.observability import (
@@ -57,6 +58,7 @@ app.include_router(owner_router, prefix="/api/v1")
 app.include_router(itinerary_router, prefix="/api/v1")
 app.include_router(checklist_router, prefix="/api/v1")
 app.include_router(documents_router, prefix="/api/v1")
+app.include_router(bookings_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])

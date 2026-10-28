@@ -136,6 +136,13 @@ def test_update_preferences(client):
     assert data["sidebar_collapsed"] is True
 
 
+@pytest.mark.parametrize("theme", ["dark", "light", "ocean", "dusk", "twilight", "sand"])
+def test_every_theme_can_be_saved_and_read_back(client, theme):
+    _, headers = register_and_login(client)
+    assert client.patch("/api/v1/auth/me/preferences", headers=headers, json={"theme": theme}).json()["theme"] == theme
+    assert client.get("/api/v1/auth/me", headers=headers).json()["theme"] == theme
+
+
 def test_partial_preference_update(client):
     _, headers = register_and_login(client)
     client.patch("/api/v1/auth/me/preferences", headers=headers, json={"currency": "GBP"})
@@ -304,3 +311,10 @@ def test_avatars_are_private_to_their_owner(client):
     client.put("/api/v1/auth/me/avatar", headers=a, content=PNG)
     assert client.get("/api/v1/auth/me/avatar", headers=b).status_code == 404
     assert client.get("/api/v1/auth/me", headers=b).json()["avatar_version"] is None
+
+
+def test_every_theme_id_fits_the_database_column():
+    from app.core.preferences import THEMES
+    from app.models.user import User
+
+    assert max(len(t) for t in THEMES) <= User.__table__.c.theme.type.length

@@ -9,6 +9,7 @@ from app.models.activity import Activity
 from app.models.schemas import ActivityCreate, ActivityUpdate, ArrangeRequest, ItineraryResponse
 from app.models.schemas import check_fits_in_day
 from app.services.activity_repository import activity_repository
+from app.services.booking_service import booking_service
 from app.services.itinerary_service import apply_moves, build_itinerary
 from app.services.trip_service import trip_repository
 
@@ -48,7 +49,7 @@ class ActivityService:
 
     def get_itinerary(self, db: Session, trip_id: UUID, user_id: UUID) -> ItineraryResponse:
         trip = self._get_trip_and_verify_ownership(db, trip_id, user_id)
-        return build_itinerary(trip, activity_repository.get_by_trip(db, trip_id))
+        return build_itinerary(trip, activity_repository.get_by_trip(db, trip_id), booking_service.for_itinerary(db, trip_id))
 
     def arrange(self, db: Session, trip_id: UUID, user_id: UUID, request: ArrangeRequest) -> ItineraryResponse:
         """Apply a drag-and-drop result (new day and order for a set of activities) atomically."""
@@ -61,7 +62,7 @@ class ActivityService:
             db.rollback()
             raise
         cache.delete_cache(get_owner_dashboard_cache_key(user_id))
-        return build_itinerary(trip, activity_repository.get_by_trip(db, trip_id))
+        return build_itinerary(trip, activity_repository.get_by_trip(db, trip_id), booking_service.for_itinerary(db, trip_id))
 
     def get_activity(
         self, db: Session, trip_id: UUID, activity_id: UUID, user_id: UUID

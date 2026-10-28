@@ -1,4 +1,12 @@
 @import 'tailwindcss';
+
+/* `dark:` follows the app's own theme (every dark theme), not the operating system's setting. */
+@custom-variant dark (&:where(
+  [data-theme='dark'], [data-theme='dark'] *,
+  [data-theme='ocean'], [data-theme='ocean'] *,
+  [data-theme='dusk'], [data-theme='dusk'] *,
+  [data-theme='twilight'], [data-theme='twilight'] *
+));
 @import '@fontsource-variable/inter';
 
 /* ------------------------------------------------------------------ */
@@ -98,6 +106,217 @@
   --ring: #a1d99b;
   --skeleton: #18281f;
   --skeleton-shine: #22372b;
+}
+
+/* Ocean night: deep navy and teal surfaces. The mint accent is unchanged, so it reads as the same brand. */
+:root[data-theme='ocean'] {
+  color-scheme: dark;
+
+  --bg: #07131b;
+  --surface: #0d1f2b;
+  --surface-2: #132a39;
+  --surface-3: #193547;
+  --line: #1d3a4d;
+  --line-strong: #2b536c;
+
+  --fg: #e6f1f5;
+  --fg-muted: #a7c0cc;
+  --fg-subtle: #86a5b4;
+
+  --primary: #a1d99b;
+  --primary-hover: #b7e5b1;
+  --primary-fg: #072018;
+  --primary-ink: #a1d99b;
+  --primary-soft: #14373c;
+  --primary-soft-fg: #c1e8bc;
+  --primary-line: #a1d99b;
+
+  --sidebar: #091a24;
+  --glow: rgb(161 217 155 / 0.16);
+
+  --danger: #f4796d;
+  --danger-hover: #f9a198;
+  --danger-fg: #2b0a07;
+  --danger-soft: #331a1d;
+  --danger-soft-fg: #f9a198;
+  --danger-line: #5e2b30;
+
+  --info-soft: #1b3d5c;
+  --info-soft-fg: #a6d4f5;
+  --success-soft: #14383a;
+  --success-soft-fg: #a1d99b;
+  --neutral-soft: #183040;
+  --neutral-soft-fg: #a7c0cc;
+  --warn-soft: #3a3016;
+  --warn-soft-fg: #f0cf7a;
+
+  --ring: #a1d99b;
+  --skeleton: #12293a;
+  --skeleton-shine: #1b3a50;
+}
+
+/* A faint horizon glow behind the page, so the navy never feels flat. */
+:root[data-theme='ocean'] body {
+  background-image:
+    radial-gradient(60rem 28rem at 12% -8%, rgb(56 150 170 / 0.14), transparent 70%),
+    radial-gradient(48rem 26rem at 105% 108%, rgb(161 217 155 / 0.07), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* Desert dusk: warm charcoal-brown surfaces with a sunset amber accent. */
+:root[data-theme='dusk'] {
+  color-scheme: dark;
+
+  --bg: #140f0c;
+  --surface: #1d1612;
+  --surface-2: #281e18;
+  --surface-3: #34271f;
+  --line: #3a2c23;
+  --line-strong: #5a4331;
+
+  --fg: #f6ece2;
+  --fg-muted: #d0bca9;
+  --fg-subtle: #ae9a86;
+
+  --primary: #f2b872;
+  --primary-hover: #f7c98d;
+  --primary-fg: #2a1606;
+  --primary-ink: #f2b872;
+  --primary-soft: #3b2a17;
+  --primary-soft-fg: #f6d3a2;
+  --primary-line: #f2b872;
+
+  --sidebar: #110c09;
+  --glow: rgb(242 184 114 / 0.16);
+
+  --danger: #f4796d;
+  --danger-hover: #f9a198;
+  --danger-fg: #2b0a07;
+  --danger-soft: #3a1c19;
+  --danger-soft-fg: #f9a198;
+  --danger-line: #6a3029;
+
+  --info-soft: #26364a;
+  --info-soft-fg: #a9cdf0;
+  --success-soft: #1f3a26;
+  --success-soft-fg: #a8dfa0;
+  --neutral-soft: #2b221c;
+  --neutral-soft-fg: #d0bca9;
+  --warn-soft: #4a3512;
+  --warn-soft-fg: #f5d58a;
+
+  --ring: #f2b872;
+  --skeleton: #261d17;
+  --skeleton-shine: #34271f;
+}
+
+:root[data-theme='dusk'] body {
+  background-image:
+    radial-gradient(60rem 28rem at 10% -10%, rgb(224 112 72 / 0.14), transparent 70%),
+    radial-gradient(48rem 26rem at 105% 108%, rgb(242 184 114 / 0.08), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* Twilight: deep indigo-violet surfaces with a lilac accent. */
+:root[data-theme='twilight'] {
+  color-scheme: dark;
+
+  --bg: #0f0c1d;
+  --surface: #171330;
+  --surface-2: #1f1a3f;
+  --surface-3: #292350;
+  --line: #2d2756;
+  --line-strong: #4a4183;
+
+  --fg: #eeebff;
+  --fg-muted: #bab4e2;
+  --fg-subtle: #9c96cb;
+
+  --primary: #c4a8ff;
+  --primary-hover: #d3bcff;
+  --primary-fg: #1a0f3a;
+  --primary-ink: #c4a8ff;
+  --primary-soft: #2c2358;
+  --primary-soft-fg: #ddd0ff;
+  --primary-line: #c4a8ff;
+
+  --sidebar: #0c0a19;
+  --glow: rgb(196 168 255 / 0.18);
+
+  --danger: #ff7a90;
+  --danger-hover: #ffa3b3;
+  --danger-fg: #2e0712;
+  --danger-soft: #3a1a2b;
+  --danger-soft-fg: #ffa3b3;
+  --danger-line: #6a2f48;
+
+  --info-soft: #1d3558;
+  --info-soft-fg: #a9cdff;
+  --success-soft: #1c3a3a;
+  --success-soft-fg: #9fe0c4;
+  --neutral-soft: #241f48;
+  --neutral-soft-fg: #bab4e2;
+  --warn-soft: #3d3315;
+  --warn-soft-fg: #f2d27d;
+
+  --ring: #c4a8ff;
+  --skeleton: #1d1840;
+  --skeleton-shine: #2a2556;
+}
+
+:root[data-theme='twilight'] body {
+  background-image:
+    radial-gradient(60rem 28rem at 8% -10%, rgb(139 92 246 / 0.18), transparent 70%),
+    radial-gradient(48rem 26rem at 105% 108%, rgb(236 130 190 / 0.09), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* Sand light: warm cream surfaces with a terracotta accent. */
+:root[data-theme='sand'] {
+  color-scheme: light;
+
+  --bg: #f6efe4;
+  --surface: #fffaf2;
+  --surface-2: #f8f0e3;
+  --surface-3: #efe3d0;
+  --line: #e6d8c3;
+  --line-strong: #cfbb9e;
+
+  --fg: #2a1d12;
+  --fg-muted: #5d4a38;
+  --fg-subtle: #725d49;
+
+  /* The accent is a fill; text and icons on cream use the deeper "ink". */
+  --primary: #f0a26b;
+  --primary-hover: #e8915a;
+  --primary-fg: #331805;
+  --primary-ink: #a8481a;
+  --primary-soft: #fbe6d2;
+  --primary-soft-fg: #8a3a12;
+  --primary-line: #e8905a;
+
+  --sidebar: #fffaf2;
+  --glow: rgb(240 162 107 / 0.32);
+
+  --danger: #b42318;
+  --danger-hover: #912018;
+  --danger-fg: #ffffff;
+  --danger-soft: #fdeceb;
+  --danger-soft-fg: #b42318;
+  --danger-line: #f1c2bd;
+
+  --info-soft: #e2eef7;
+  --info-soft-fg: #1f5f86;
+  --success-soft: #e3f0d9;
+  --success-soft-fg: #2f6a22;
+  --neutral-soft: #efe6d8;
+  --neutral-soft-fg: #5d4a38;
+  --warn-soft: #fdf0cf;
+  --warn-soft-fg: #7a5000;
+
+  --ring: #c0612a;
+  --skeleton: #eadfcd;
+  --skeleton-shine: #f6efe4;
 }
 
 @theme inline {

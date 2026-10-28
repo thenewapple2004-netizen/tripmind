@@ -2,6 +2,7 @@ import { applySidebarCollapsed, useSidebarCollapsedValue } from '@/hooks/useSide
 import { applyTheme, useTheme } from '@/hooks/useTheme'
 import { useUpdatePreferences } from '@/hooks/useProfile'
 import type { ThemePreference } from '@/api/authTypes'
+import { toggledTheme } from '@/lib/theme'
 
 /**
  * Appearance choices for a signed-in owner: applied instantly on this device and saved to the
@@ -28,7 +29,7 @@ export function useAppearance() {
     collapsed,
     setTheme,
     setCollapsed,
-    toggleTheme: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
+    toggleTheme: () => setTheme(toggledTheme(theme)),
     toggleCollapsed: () => setCollapsed(!collapsed),
     saving: save.isPending,
     error: save.error,

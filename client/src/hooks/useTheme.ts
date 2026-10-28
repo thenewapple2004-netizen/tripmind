@@ -1,13 +1,13 @@
 import { useCallback, useSyncExternalStore } from 'react'
-
-type Theme = 'light' | 'dark'
+import type { ThemePreference } from '@/api/authTypes'
+import { normalizeTheme, toggledTheme } from '@/lib/theme'
 
 const STORAGE_KEY = 'tripmind-theme-v2'
 const listeners = new Set<() => void>()
 
 /** The initial theme is applied by a script in index.html; this store reads and changes it. */
-function read(): Theme {
-  return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
+function read(): ThemePreference {
+  return normalizeTheme(document.documentElement.dataset.theme)
 }
 
 function subscribe(listener: () => void) {
@@ -16,8 +16,8 @@ function subscribe(listener: () => void) {
 }
 
 /** Applies a theme everywhere (every component using `useTheme` updates) and remembers it on this device. */
-export function applyTheme(next: Theme) {
-  if (read() === next && document.documentElement.dataset.theme === next) return
+export function applyTheme(next: ThemePreference) {
+  if (document.documentElement.dataset.theme === next) return
   document.documentElement.dataset.theme = next
   try {
     localStorage.setItem(STORAGE_KEY, next)
@@ -28,7 +28,7 @@ export function applyTheme(next: Theme) {
 }
 
 export function useTheme() {
-  const theme = useSyncExternalStore(subscribe, read, () => 'dark' as Theme)
-  const toggle = useCallback(() => applyTheme(read() === 'dark' ? 'light' : 'dark'), [])
+  const theme = useSyncExternalStore(subscribe, read, () => 'dark' as ThemePreference)
+  const toggle = useCallback(() => applyTheme(toggledTheme(read())), [])
   return { theme, toggle, setTheme: applyTheme }
 }

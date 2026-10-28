@@ -1,14 +1,11 @@
-import { Moon, Palette, Sun } from 'lucide-react'
+import { Moon, MoonStar, Palette, Sun, Sunrise, Sunset, Waves } from 'lucide-react'
 import { ApiError } from '@/api/errors'
 import { SettingsCard } from '@/components/settings/SettingsCard'
 import { cn } from '@/components/ui/cn'
 import { useAppearance } from '@/hooks/useAppearance'
-import type { ThemePreference } from '@/api/authTypes'
+import { THEMES } from '@/lib/theme'
 
-const THEMES: Array<{ value: ThemePreference; label: string; hint: string; icon: typeof Moon; swatch: string[] }> = [
-  { value: 'dark', label: 'Forest dark', hint: 'Deep greens with mint highlights', icon: Moon, swatch: ['#0a120e', '#17261e', '#a1d99b'] },
-  { value: 'light', label: 'Mint light', hint: 'Soft whites with mint highlights', icon: Sun, swatch: ['#edf3ec', '#ffffff', '#a1d99b'] },
-]
+const ICONS = { dark: Moon, ocean: Waves, dusk: Sunset, twilight: MoonStar, light: Sun, sand: Sunrise } as const
 
 /** Appearance changes apply instantly and are saved to the account in the background. */
 export function AppearanceCard() {
@@ -21,36 +18,44 @@ export function AppearanceCard() {
       title="Appearance"
       description="Saved to your account, so it follows you to other devices"
     >
-      <div role="radiogroup" aria-label="Theme" className="grid gap-3 sm:grid-cols-2">
-        {THEMES.map(({ value, label, hint, icon: Icon, swatch }) => {
-          const selected = theme === value
-          return (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={selected}
-              onClick={() => setTheme(value)}
-              className={cn(
-                'flex items-center gap-4 rounded-2xl border p-4 text-left transition',
-                selected ? 'border-primary bg-primary-soft shadow-glow' : 'border-line bg-surface-2 hover:border-line-strong',
-              )}
-            >
-              <span className="flex h-12 w-16 shrink-0 overflow-hidden rounded-xl border border-line-strong" aria-hidden>
-                {swatch.map((color) => (
-                  <span key={color} className="flex-1" style={{ background: color }} />
-                ))}
-              </span>
-              <span className="min-w-0">
-                <span className={cn('flex items-center gap-2 text-sm font-semibold', selected ? 'text-primary-soft-fg' : 'text-fg')}>
-                  <Icon className="size-4" aria-hidden />
-                  {label}
-                </span>
-                <span className="mt-0.5 block text-xs text-fg-subtle">{hint}</span>
-              </span>
-            </button>
-          )
-        })}
+      <div role="radiogroup" aria-label="Theme" className="space-y-5">
+        {([['Dark', true], ['Light', false]] as const).map(([heading, wantDark]) => (
+          <div key={heading}>
+            <p className="mb-2 text-xs font-semibold tracking-wide text-fg-subtle uppercase">{heading}</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {THEMES.filter((t) => t.isDark === wantDark).map(({ value, label, hint, swatch }) => {
+                const Icon = ICONS[value]
+                const selected = theme === value
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => setTheme(value)}
+                    className={cn(
+                      'flex items-center gap-4 rounded-2xl border p-4 text-left transition',
+                      selected ? 'border-primary bg-primary-soft shadow-glow' : 'border-line bg-surface-2 hover:border-line-strong',
+                    )}
+                  >
+                    <span className="flex h-12 w-16 shrink-0 overflow-hidden rounded-xl border border-line-strong" aria-hidden>
+                      {swatch.map((color) => (
+                        <span key={color} className="flex-1" style={{ background: color }} />
+                      ))}
+                    </span>
+                    <span className="min-w-0">
+                      <span className={cn('flex items-center gap-2 text-sm font-semibold', selected ? 'text-primary-soft-fg' : 'text-fg')}>
+                        <Icon className="size-4 shrink-0" aria-hidden />
+                        {label}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-fg-subtle">{hint}</span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-4 rounded-2xl bg-surface-2 p-4">

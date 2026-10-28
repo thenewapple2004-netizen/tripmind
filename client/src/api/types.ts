@@ -99,12 +99,27 @@ export interface OwnerProfile {
 
 // ─── Itinerary planner ──────────────────────────────────────────────────────
 
+/** A confirmed booking's moment on a day (departure, check-in...). Shown read-only beside activities. */
+export interface ItineraryReservation {
+  booking_id: string
+  type: BookingType
+  status: BookingStatus
+  title: string
+  provider?: string | null
+  confirmation_number?: string | null
+  location?: string | null
+  label: string
+  date: string
+  time?: string | null
+}
+
 export interface ItineraryDay {
   date: string
   day_number: number
   activities: Activity[]
   total_cost: number
   scheduled_minutes: number
+  reservations: ItineraryReservation[]
 }
 
 export interface ItineraryConflict {
@@ -121,6 +136,8 @@ export interface Itinerary {
   unscheduled_count: number
   days: ItineraryDay[]
   conflicts: ItineraryConflict[]
+  /** Confirmed reservations that fall on a date outside the trip's days (e.g. a flight the night before). */
+  off_calendar_reservations: ItineraryReservation[]
 }
 
 /** Where an activity should end up after a drag and drop. */
@@ -157,4 +174,80 @@ export interface TripDocument {
 
 export interface OwnerDocument extends TripDocument {
   trip_title: string
+}
+
+// ─── Bookings ───────────────────────────────────────────────────────────────
+
+export type BookingType = 'flight' | 'hotel' | 'transportation' | 'activity'
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed'
+
+/** Type-specific fields (flight number, pickup location...). Which keys exist depends on the type. */
+export type BookingDetails = Record<string, string | number>
+
+export interface Booking {
+  id: string
+  trip_id: string
+  type: BookingType
+  status: BookingStatus
+  title: string
+  provider: string | null
+  confirmation_number: string | null
+  start_date: string
+  start_time: string | null
+  end_date: string | null
+  end_time: string | null
+  location: string | null
+  total_cost: number
+  currency: string
+  notes: string | null
+  cancellation_policy: string | null
+  free_cancellation_until: string | null
+  details: BookingDetails
+  /** Existing documents linked to this booking (metadata only; files are stored once, on the trip). */
+  documents: TripDocument[]
+  created_at: string
+  updated_at: string
+  outside_trip_dates: boolean
+}
+
+export interface OwnerBooking extends Booking {
+  trip_title: string
+  trip_destination: string
+}
+
+export interface PaginatedBookings {
+  items: OwnerBooking[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
+export interface BookingSummary {
+  total: number
+  upcoming_count: number
+  by_status: Record<BookingStatus, number>
+  by_type: Record<BookingType, number>
+  upcoming_cost: Array<{ currency: string; total: number }>
+}
+
+/** What the booking form sends. Optional fields use null to mean "none". */
+export interface BookingInput {
+  type: BookingType
+  status: BookingStatus
+  title: string
+  provider: string | null
+  confirmation_number: string | null
+  start_date: string
+  start_time: string | null
+  end_date: string | null
+  end_time: string | null
+  location: string | null
+  total_cost: number
+  currency: string
+  notes: string | null
+  cancellation_policy: string | null
+  free_cancellation_until: string | null
+  details: BookingDetails
+  document_ids: string[]
 }

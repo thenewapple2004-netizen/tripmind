@@ -1,0 +1,168 @@
+"""
+Sample travel documents for development, so the Documents features (list, download, delete, the
+owner-wide vault) can be tried without finding files to upload.
+
+The files are generated here, with no third-party libraries: small but genuinely valid PDFs and PNGs.
+Every one is stamped "SAMPLE" and contains only placeholder values, never real personal data.
+"""
+
+import struct
+import zlib
+from typing import Callable, Dict, List, Sequence, Tuple
+
+
+# ── PDF ───────────────────────────────────────────────────────────────────
+
+def _pdf_escape(text: str) -> str:
+    """Escapes text for a PDF string and keeps it within the standard Latin-1 font encoding."""
+    text = text.encode("latin-1", "replace").decode("latin-1")
+    return text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+
+def make_pdf(title: str, lines: Sequence[str]) -> bytes:
+    """A one-page A4 PDF: a mint header bar with the title, then the given lines of text."""
+    content: List[str] = [
+        "0.63 0.85 0.61 rg 0 772 595 70 re f",            # header bar in the TripMind mint
+        "0.04 0.13 0.08 rg BT /F2 22 Tf 40 797 Td (" + _pdf_escape(title) + ") Tj ET",
+        "0.1 0.1 0.1 rg",
+    ]
+    y = 730
+    for line in lines:
+        font, size = ("/F2", 13) if line.startswith("#") else ("/F1", 12)
+        content.append(f"BT {font} {size} Tf 40 {y} Td ({_pdf_escape(line.lstrip('# '))}) Tj ET")
+        y -= 24 if line.startswith("#") else 20
+    stream = "\n".join(content).encode("latin-1")
+
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R "
+        b"/Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>",
+        b"<< /Length " + str(len(stream)).encode() + b" >>\nstream\n" + stream + b"\nendstream",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>",
+    ]
+    out = bytearray(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")
+    offsets = []
+    for number, body in enumerate(objects, start=1):
+        offsets.append(len(out))
+        out += f"{number} 0 obj\n".encode() + body + b"\nendobj\n"
+    xref_at = len(out)
+    out += f"xref\n0 {len(objects) + 1}\n".encode() + b"0000000000 65535 f \n"
+    for offset in offsets:
+        out += f"{offset:010d} 00000 n \n".encode()
+    out += f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_at}\n%%EOF\n".encode()
+    return bytes(out)
+
+
+# ── PNG ───────────────────────────────────────────────────────────────────
+
+def _chunk(kind: bytes, data: bytes) -> bytes:
+    return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+
+
+def make_png(width: int, height: int, pixel: Callable[[int, int], Tuple[int, int, int]]) -> bytes:
+    """An RGB PNG whose colour at (x, y) is `pixel(x, y)`."""
+    rows = bytearray()
+    for y in range(height):
+        rows.append(0)  # filter type: none
+        for x in range(width):
+            rows += bytes(pixel(x, y))
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + _chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+        + _chunk(b"IDAT", zlib.compress(bytes(rows), 9))
+        + _chunk(b"IEND", b"")
+    )
+
+
+DARK, MINT, LIGHT = (13, 23, 18), (161, 217, 155), (233, 242, 234)
+
+
+def make_pass_png(seed: int) -> bytes:
+    """A boarding-pass style card: a mint stub, text-like bars and a barcode. `seed` varies the barcode."""
+    width, height, stub = 640, 240, 150
+
+    # Barcode: alternating bars of pseudo-random width, from a small deterministic generator.
+    state, bars, x = seed * 2654435761 % 2**32 or 1, [], 0
+    while x < 330:
+        state = (state * 1103515245 + 12345) % 2**31
+        w = 2 + state % 5
+        bars.append((x, x + w))
+        x += w + 2 + (state >> 8) % 4
+
+    def pixel(px: int, py: int) -> Tuple[int, int, int]:
+        if px < stub:
+            return MINT if not (py % 24 < 3 and 24 < px < stub - 24) else DARK
+        if px >= width - 12 or px < stub + 6:
+            return MINT
+        if 150 <= py < 230 and any(a <= px - 280 < b for a, b in bars):
+            return LIGHT
+        if py in (34, 35):
+            return MINT
+        if 56 <= py < 66 and px < stub + 6 + 170 + (seed % 4) * 20:
+            return LIGHT
+        if 84 <= py < 90 and px < stub + 6 + 120:
+            return (120, 150, 125)
+        if 104 <= py < 110 and px < stub + 6 + 200:
+            return (120, 150, 125)
+        return DARK
+
+    return make_png(width, height, pixel)
+
+
+# ── The sample set ────────────────────────────────────────────────────────
+
+NOTE = "SAMPLE DATA FOR TESTING. Not a real document."
+
+
+def _pdf(title: str, trip_title: str, *fields: str) -> Callable[[], bytes]:
+    return lambda: make_pdf(
+        title,
+        [NOTE, "", f"# Trip: {trip_title}", "", *fields, "", "Generated by the TripMind development seed."],
+    )
+
+
+def _png(seed: int) -> Callable[[], bytes]:
+    return lambda: make_pass_png(seed)
+
+
+# trip key -> [(filename, kind, builder)]. Trip titles must match trips_data.py.
+DOCUMENTS: Dict[str, List[Tuple[str, str, Callable[[], bytes]]]] = {
+    "hunza-cultural-retreat": [
+        ("Passport scan (sample).pdf", "passport", _pdf("Passport (sample)", "Hunza Valley Cultural Retreat", "Holder: SAMPLE TRAVELLER", "Passport no: XX0000000", "Valid until: 2031-12-31")),
+        ("Guesthouse booking Karimabad (sample).pdf", "booking", _pdf("Booking confirmation (sample)", "Hunza Valley Cultural Retreat", "Property: Sample Guesthouse, Karimabad", "Nights: 7", "Reference: TM-HUNZA-001")),
+    ],
+    "skardu-shangrila": [
+        ("Flight ticket ISB-SKZ (sample).png", "ticket", _png(11)),
+        ("Hotel confirmation Skardu (sample).pdf", "booking", _pdf("Hotel confirmation (sample)", "Skardu & Shangrila Escape", "Property: Sample Hotel, Skardu", "Nights: 6", "Reference: TM-SKARDU-002")),
+    ],
+    "kyoto-cherry-blossom": [
+        ("Passport scan (sample).pdf", "passport", _pdf("Passport (sample)", "Kyoto Cherry Blossom Season", "Holder: SAMPLE TRAVELLER", "Passport no: XX0000000")),
+        ("Japan visa (sample).pdf", "visa", _pdf("Visa (sample)", "Kyoto Cherry Blossom Season", "Type: Tourist, single entry", "Stay: up to 15 days", "Visa no: SAMPLE-JP-0001")),
+        ("Flight ticket (sample).png", "ticket", _png(23)),
+        ("Travel insurance (sample).pdf", "insurance", _pdf("Travel insurance (sample)", "Kyoto Cherry Blossom Season", "Policy no: SAMPLE-INS-0001", "Cover: medical, baggage, cancellation")),
+    ],
+    "istanbul-bazaar-break": [
+        ("E-visa (sample).pdf", "visa", _pdf("E-visa (sample)", "Istanbul Bazaar Break", "Type: Tourist e-visa", "Entry: single", "Reference: SAMPLE-TR-0001")),
+        ("Boarding pass (sample).png", "ticket", _png(37)),
+    ],
+    "dubai-desert-getaway": [
+        ("Flight booking (sample).pdf", "ticket", _pdf("Flight booking (sample)", "Dubai Desert Getaway", "Route: Islamabad - Dubai (return)", "Booking ref: TM-DXB-003")),
+        ("Hotel voucher (sample).pdf", "booking", _pdf("Hotel voucher (sample)", "Dubai Desert Getaway", "Property: Sample Hotel, Downtown", "Nights: 3", "Voucher: TM-DXB-004")),
+        ("Travel insurance (sample).pdf", "insurance", _pdf("Travel insurance (sample)", "Dubai Desert Getaway", "Policy no: SAMPLE-INS-0002")),
+    ],
+    "k2-concordia-trek": [
+        ("Trek permit (sample).pdf", "other", _pdf("Trekking permit (sample)", "K2 Base Camp Concordia Trek", "Area: Central Karakoram National Park", "Permit no: SAMPLE-CKNP-0001")),
+        ("High-altitude insurance (sample).pdf", "insurance", _pdf("High-altitude insurance (sample)", "K2 Base Camp Concordia Trek", "Policy no: SAMPLE-INS-0003", "Cover: to 6,000 m, helicopter rescue")),
+        ("Trek operator contract (sample).pdf", "booking", _pdf("Operator contract (sample)", "K2 Base Camp Concordia Trek", "Operator: Sample Expeditions", "Deposit paid: yes")),
+    ],
+    "zermatt-alpine-winter": [
+        ("Chalet booking (sample).pdf", "booking", _pdf("Chalet booking (sample)", "Zermatt Alpine Winter Week", "Property: Sample Chalet", "Nights: 7", "Reference: TM-ZER-005")),
+        ("Rail pass (sample).png", "ticket", _png(41)),
+    ],
+    "maldives-island-escape": [
+        ("Resort booking (sample).pdf", "booking", _pdf("Resort booking (sample)", "Maldives Island Escape", "Villa: Water bungalow", "Nights: 6", "Reference: TM-MLE-006")),
+        ("Boarding pass (sample).png", "ticket", _png(53)),
+    ],
+}
