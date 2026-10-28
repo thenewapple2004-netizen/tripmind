@@ -11,6 +11,13 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
     refresh_token_expire_days: int = 14
 
+    # Observability Configuration
+    service_name: str = "auth-service"
+    otlp_endpoint: str | None = None
+    log_level: str = "INFO"
+    log_format: str = "json"
+    tracing_enabled: bool = True
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

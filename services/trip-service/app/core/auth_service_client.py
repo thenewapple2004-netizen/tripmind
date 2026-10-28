@@ -19,6 +19,7 @@ from typing import Any
 import httpx
 
 from app.core.config import settings
+from app.core.observability import get_correlation_id, inject_trace_context, trace_span
 
 logger = logging.getLogger(__name__)
 
@@ -115,13 +116,29 @@ async def _fetch_with_retry(
             )
             await asyncio.sleep(delay)
 
+        headers = dict(kwargs.pop("headers", {}))
+        headers["Authorization"] = f"Bearer {bearer_token}"
+        cid = get_correlation_id()
+        if cid:
+            headers["X-Correlation-ID"] = cid
+
         try:
-            response = await client.request(
-                method,
-                path,
-                headers={"Authorization": f"Bearer {bearer_token}"},
-                **kwargs,
-            )
+            with trace_span(
+                "http.client: auth-service",
+                attributes={
+                    "http.method": method.upper(),
+                    "http.url": f"{settings.auth_service_url}{path}",
+                    "http.target": path,
+                },
+            ) as span:
+                inject_trace_context(headers)
+                response = await client.request(
+                    method,
+                    path,
+                    headers=headers,
+                    **kwargs,
+                )
+                span.set_attribute("http.status_code", response.status_code)
 
             if response.status_code in (401, 403):
                 logger.warning(

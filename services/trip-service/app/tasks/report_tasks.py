@@ -8,11 +8,19 @@ from celery.exceptions import Ignore
 from app.core.celery_app import celery_app
 from app.core.config import settings
 from app.core.database import SessionLocal
+from app.core.observability import (
+    extract_trace_context,
+    get_correlation_id,
+    get_tracer,
+    set_correlation_id,
+)
 from app.models.activity import Activity
 from app.models.trip import Trip
 from app.services.expense_repository import expense_repository
 from app.services.expense_service import expense_service
 from app.services.trip_service import trip_repository
+from opentelemetry import trace
+from opentelemetry.trace import Status, StatusCode
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +56,24 @@ def generate_trip_report(self, trip_id: str, user_id: str) -> dict:
     5. Itemized expenses ledger
     """
     task_id = self.request.id or f"manual_{datetime.now(timezone.utc).timestamp()}"
+    task_headers = getattr(self.request, "headers", None) or {}
+    cid = task_headers.get("correlation_id") or get_correlation_id() or f"celery-{task_id}"
+    set_correlation_id(cid)
+
+    trace_ctx = extract_trace_context(task_headers)
+    tracer = get_tracer("celery-worker")
+
+    span = tracer.start_span(
+        "celery.task: tasks.generate_trip_report",
+        context=trace_ctx,
+        kind=trace.SpanKind.CONSUMER,
+    )
+    span.set_attribute("celery.task_id", str(task_id))
+    span.set_attribute("celery.task_name", "tasks.generate_trip_report")
+    span.set_attribute("correlation_id", cid)
+    span.set_attribute("trip_id", str(trip_id))
+    span.set_attribute("user_id", str(user_id))
+
     logger.info(f"Starting trip report generation: trip_id={trip_id}, task_id={task_id}")
 
     db = SessionLocal()
@@ -197,6 +223,8 @@ def generate_trip_report(self, trip_id: str, user_id: str) -> dict:
         }
 
     except Exception as exc:
+        span.set_status(Status(StatusCode.ERROR, str(exc)))
+        span.record_exception(exc)
         if temp_file_path and os.path.exists(temp_file_path):
             try:
                 os.remove(temp_file_path)
@@ -207,4 +235,5 @@ def generate_trip_report(self, trip_id: str, user_id: str) -> dict:
         raise
 
     finally:
+        span.end()
         db.close()

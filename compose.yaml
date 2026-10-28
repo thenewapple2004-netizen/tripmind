@@ -28,11 +28,17 @@ services:
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/tripmind_auth
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-tripmind-super-secret-jwt-key-change-in-production-2026}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      SERVICE_NAME: auth-service
+      OTLP_ENDPOINT: http://jaeger:4318/v1/traces
+      LOG_LEVEL: INFO
+      LOG_FORMAT: json
     volumes:
       - ./services/auth-service/app:/app/app
     depends_on:
       postgres:
         condition: service_healthy
+      jaeger:
+        condition: service_started
 
   redis:
     image: redis:7-alpine
@@ -61,6 +67,10 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-tripmind-super-secret-jwt-key-change-in-production-2026}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:8000}
+      SERVICE_NAME: trip-service
+      OTLP_ENDPOINT: http://jaeger:4318/v1/traces
+      LOG_LEVEL: INFO
+      LOG_FORMAT: json
     volumes:
       - ./services/trip-service/app:/app/app
       - ./services/trip-service/alembic:/app/alembic
@@ -70,6 +80,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      jaeger:
+        condition: service_started
 
   celery-worker:
     build: ./services/trip-service
@@ -85,6 +97,10 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-tripmind-super-secret-jwt-key-change-in-production-2026}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth-service:8000}
+      SERVICE_NAME: celery-worker
+      OTLP_ENDPOINT: http://jaeger:4318/v1/traces
+      LOG_LEVEL: INFO
+      LOG_FORMAT: json
     volumes:
       - ./services/trip-service/app:/app/app
       - ./services/trip-service/reports:/app/reports
@@ -93,6 +109,50 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      jaeger:
+        condition: service_started
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: tripmind-jaeger
+    restart: always
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: tripmind-prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - auth-service
+      - trip-service
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: tripmind-grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - jaeger
 
   client:
     build: ./client
@@ -114,3 +174,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  grafana_data:
