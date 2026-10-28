@@ -3,6 +3,8 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core import cache
+from app.core.cache import get_owner_dashboard_cache_key
 from app.models.activity import Activity
 from app.models.schemas import ActivityCreate, ActivityUpdate
 from app.services.activity_repository import activity_repository
@@ -31,7 +33,10 @@ class ActivityService:
                 detail=f"Activity date {activity_in.activity_date} must be between trip start date ({trip.start_date}) and end date ({trip.end_date})",
             )
 
-        return activity_repository.create(db, trip_id, activity_in)
+        act = activity_repository.create(db, trip_id, activity_in)
+        if user_id:
+            cache.delete_cache(get_owner_dashboard_cache_key(user_id))
+        return act
 
     def get_activities_for_trip(
         self, db: Session, trip_id: UUID, user_id: UUID
@@ -65,14 +70,21 @@ class ActivityService:
                     detail=f"Activity date {activity_update.activity_date} must be between trip start date ({trip.start_date}) and end date ({trip.end_date})",
                 )
 
-        return activity_repository.update(db, activity, activity_update)
+        updated = activity_repository.update(db, activity, activity_update)
+        if user_id:
+            cache.delete_cache(get_owner_dashboard_cache_key(user_id))
+        return updated
 
     def delete_activity(
         self, db: Session, trip_id: UUID, activity_id: UUID, user_id: UUID
     ) -> bool:
         self._get_trip_and_verify_ownership(db, trip_id, user_id)
         activity = self.get_activity(db, trip_id, activity_id, user_id)
-        return activity_repository.delete(db, activity)
+        deleted = activity_repository.delete(db, activity)
+        if deleted and user_id:
+            cache.delete_cache(get_owner_dashboard_cache_key(user_id))
+        return deleted
 
 
 activity_service = ActivityService()
+

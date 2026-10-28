@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.models.trip import Trip
 from app.models.schemas import TripCreate, TripUpdate
 from app.core import cache
-from app.core.cache import get_budget_cache_key
+from app.core.cache import get_budget_cache_key, get_owner_dashboard_cache_key
 
 
 class TripRepository:
@@ -23,6 +23,8 @@ class TripRepository:
         db.add(trip)
         db.commit()
         db.refresh(trip)
+        if user_id:
+            cache.delete_cache(get_owner_dashboard_cache_key(user_id))
         return trip
 
     def get_all(self, db: Session, user_id: Optional[UUID] = None) -> List[Trip]:
@@ -164,6 +166,7 @@ class TripRepository:
 
         if trip.user_id:
             cache.delete_cache(get_budget_cache_key(trip.user_id, trip.id))
+            cache.delete_cache(get_owner_dashboard_cache_key(trip.user_id))
 
         return trip
 
@@ -177,8 +180,10 @@ class TripRepository:
 
         if owner_id:
             cache.delete_cache(get_budget_cache_key(owner_id, trip_id))
+            cache.delete_cache(get_owner_dashboard_cache_key(owner_id))
 
         return True
 
 
 trip_repository = TripRepository()
+

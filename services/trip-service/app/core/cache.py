@@ -22,6 +22,11 @@ def get_budget_cache_key(user_id: object, trip_id: object) -> str:
     return f"tripmind:budget:v1:{user_id}:{trip_id}"
 
 
+def get_owner_dashboard_cache_key(user_id: object) -> str:
+    """Generate the standardized cache key for an owner's aggregated dashboard."""
+    return f"tripmind:owner_dashboard:v1:{user_id}"
+
+
 def get_redis() -> redis.Redis:
     """FastAPI dependency for obtaining the Redis client instance."""
     return redis_client

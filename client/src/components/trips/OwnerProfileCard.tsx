@@ -1,4 +1,4 @@
-import { AlertTriangle, ExternalLink, RefreshCw, ShieldCheck, User2, Wifi } from 'lucide-react'
+import { ExternalLink, RefreshCw, ShieldCheck, User2, Wifi } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useOwnerProfile } from '@/hooks/useOwnerProfile'
 

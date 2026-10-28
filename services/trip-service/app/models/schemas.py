@@ -195,3 +195,116 @@ class OwnerProfileResponse(BaseModel):
     email: str
     created_at: str
     source: str = "auth-service"  # documents which service supplied this data
+
+
+# ==========================================
+# Owner Dashboard & Analytics Schemas (Task 17)
+# ==========================================
+
+class OwnerDashboardOverview(BaseModel):
+    total_trips: int
+    upcoming_trips_count: int
+    ongoing_trips_count: int
+    completed_trips_count: int
+    total_budget: Decimal
+    total_spent: Decimal
+    remaining_budget: Decimal
+    budget_utilization_pct: float
+    is_over_budget: bool
+    total_activities: int
+    total_expenses_count: int
+    total_reports_count: int
+
+
+class OwnerCategoryExpense(BaseModel):
+    category: str
+    total_amount: Decimal
+    count: int
+    percentage: float
+
+
+class OwnerSpendingTrend(BaseModel):
+    period: str  # e.g. "2026-07"
+    total_spent: Decimal
+    count: int
+
+
+class OwnerTripStatusDistribution(BaseModel):
+    status: str  # "upcoming", "ongoing", "completed"
+    count: int
+    percentage: float
+
+
+class OwnerUpcomingTrip(BaseModel):
+    id: UUID
+    title: str
+    destination: str
+    start_date: date
+    end_date: date
+    budget: Decimal
+    total_spent: Decimal
+    remaining_budget: Decimal
+    percent_spent: float
+    activity_count: int
+    days_until_start: int
+    status: str
+
+
+class OwnerRecentActivity(BaseModel):
+    id: UUID
+    trip_id: UUID
+    trip_title: str
+    title: str
+    location: Optional[str] = None
+    activity_date: date
+    cost: Decimal
+    description: Optional[str] = None
+
+
+class OwnerRecentExpense(BaseModel):
+    id: UUID
+    trip_id: UUID
+    trip_title: str
+    title: str
+    amount: Decimal
+    category: str
+    expense_date: date
+    description: Optional[str] = None
+
+
+class OwnerReportHistoryItem(BaseModel):
+    task_id: str
+    trip_id: UUID
+    trip_title: str
+    filename: str
+    file_size: int
+    generated_at: str
+    download_url: str
+
+
+class OwnerDashboardResponse(BaseModel):
+    overview: OwnerDashboardOverview
+    category_expenses: List[OwnerCategoryExpense]
+    spending_trends: List[OwnerSpendingTrend]
+    trip_status_distribution: List[OwnerTripStatusDistribution]
+    upcoming_trips: List[OwnerUpcomingTrip]
+    recent_activities: List[OwnerRecentActivity]
+    recent_expenses: List[OwnerRecentExpense]
+    reports_history: List[OwnerReportHistoryItem]
+
+
+class PaginatedOwnerActivities(BaseModel):
+    items: List[OwnerRecentActivity]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class PaginatedOwnerExpenses(BaseModel):
+    items: List[OwnerRecentExpense]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+

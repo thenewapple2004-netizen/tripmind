@@ -12,6 +12,7 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { EditTripPage } from '@/pages/EditTripPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { OwnerPortalPage } from '@/pages/OwnerPortalPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { RouteError } from '@/pages/RouteError'
 import { TripDetailsPage } from '@/pages/TripDetailsPage'
@@ -62,6 +63,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <EditTripPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'portal',
+        element: (
+          <ProtectedRoute>
+            <OwnerPortalPage />
           </ProtectedRoute>
         ),
       },

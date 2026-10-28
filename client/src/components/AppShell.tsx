@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { Link, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
-import { Compass, LogIn, LogOut, Moon, Plus, Sun, User as UserIcon } from 'lucide-react'
+import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
+import { Compass, LayoutDashboard, LogIn, LogOut, Moon, Plus, Sun, User as UserIcon } from 'lucide-react'
 import { Button, ButtonLink } from '@/components/ui/Button'
+import { cn } from '@/components/ui/cn'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -61,6 +62,20 @@ export function AppShell() {
 
             {isAuthenticated ? (
               <>
+                <NavLink
+                  to="/portal"
+                  className={({ isActive }) =>
+                    cn(
+                      'hidden md:flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                      isActive
+                        ? 'bg-primary-soft text-primary-soft-fg'
+                        : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
+                    )
+                  }
+                >
+                  <LayoutDashboard className="size-3.5" aria-hidden />
+                  Portal
+                </NavLink>
                 <div className="hidden sm:flex items-center gap-2 rounded-lg bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg-muted">
                   <UserIcon className="size-3.5 text-primary" />
                   <span className="max-w-[150px] truncate">{user?.email}</span>

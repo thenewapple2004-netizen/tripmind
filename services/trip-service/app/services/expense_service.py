@@ -4,7 +4,7 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
 from app.core import cache
-from app.core.cache import get_budget_cache_key
+from app.core.cache import get_budget_cache_key, get_owner_dashboard_cache_key
 from app.core.config import settings
 from app.models.expense import Expense
 from app.models.schemas import (
@@ -38,6 +38,7 @@ class ExpenseService:
             owner_id = user_id or trip.user_id
             if owner_id:
                 cache.delete_cache(get_budget_cache_key(owner_id, trip_id))
+                cache.delete_cache(get_owner_dashboard_cache_key(owner_id))
         return expense
 
     def list_expenses(
@@ -84,6 +85,7 @@ class ExpenseService:
             owner_id = user_id or trip.user_id
             if owner_id:
                 cache.delete_cache(get_budget_cache_key(owner_id, trip_id))
+                cache.delete_cache(get_owner_dashboard_cache_key(owner_id))
         return updated
 
     def delete_expense(
@@ -97,6 +99,7 @@ class ExpenseService:
             owner_id = user_id or trip.user_id
             if owner_id:
                 cache.delete_cache(get_budget_cache_key(owner_id, trip_id))
+                cache.delete_cache(get_owner_dashboard_cache_key(owner_id))
         return deleted
 
     def get_budget_summary(
