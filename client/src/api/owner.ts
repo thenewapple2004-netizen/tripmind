@@ -13,7 +13,7 @@ import type {
 } from './ownerTypes'
 
 export async function getOwnerDashboard(): Promise<OwnerDashboardResponse> {
-  return request<OwnerDashboardResponse>('/trips/owner/dashboard')
+  return request<OwnerDashboardResponse>('/owner/dashboard')
 }
 
 export async function getOwnerActivities(
@@ -21,7 +21,7 @@ export async function getOwnerActivities(
   pageSize = 10,
 ): Promise<PaginatedOwnerActivities> {
   return request<PaginatedOwnerActivities>(
-    `/trips/owner/activities?page=${page}&page_size=${pageSize}`,
+    `/owner/activities?page=${page}&page_size=${pageSize}`,
   )
 }
 
@@ -32,9 +32,9 @@ export async function getOwnerExpenses(
 ): Promise<PaginatedOwnerExpenses> {
   const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) })
   if (category) params.set('category', category)
-  return request<PaginatedOwnerExpenses>(`/trips/owner/expenses?${params}`)
+  return request<PaginatedOwnerExpenses>(`/owner/expenses?${params}`)
 }
 
 export async function getOwnerReports(): Promise<OwnerReportHistoryItem[]> {
-  return request<OwnerReportHistoryItem[]>('/trips/owner/reports')
+  return request<OwnerReportHistoryItem[]>('/owner/reports')
 }
