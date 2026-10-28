@@ -53,7 +53,7 @@ export function WeekAgenda({
         }
       />
 
-      <div role="tablist" aria-label="Next seven days" className="grid grid-cols-7 gap-1 rounded-2xl bg-surface-2 p-1.5">
+      <div role="tablist" aria-label="Next seven days" className="grid grid-cols-7 gap-1 rounded-lg bg-surface-2 p-1.5">
         {days.map(({ iso, date }) => {
           const active = iso === selected
           return (
@@ -68,7 +68,7 @@ export function WeekAgenda({
               }`}
               className={cn(
                 'relative flex flex-col items-center gap-0.5 rounded-xl py-1.5 transition',
-                active ? 'bg-primary text-primary-fg shadow-glow' : 'text-fg-muted hover:bg-surface-3 hover:text-fg',
+                active ? 'bg-primary text-primary-fg' : 'text-fg-muted hover:bg-surface-3 hover:text-fg',
               )}
             >
               <span className="text-[9px] font-semibold uppercase">
@@ -87,8 +87,8 @@ export function WeekAgenda({
       <div className="mt-4 min-h-32">
         {loading ? (
           <div role="status" aria-label="Loading activities" className="grid gap-2 @lg:grid-cols-2">
-            <Skeleton className="h-16 rounded-2xl" />
-            <Skeleton className="h-16 rounded-2xl" />
+            <Skeleton className="h-16 rounded-lg" />
+            <Skeleton className="h-16 rounded-lg" />
           </div>
         ) : error ? (
           <EmptyNote icon={<CalendarX2 className="size-6" aria-hidden />}>We couldn't load your activities.</EmptyNote>
@@ -100,7 +100,7 @@ export function WeekAgenda({
               <li key={a.id}>
                 <Link
                   to={`/trips/${a.trip_id}?tab=itinerary`}
-                  className="flex h-full items-center gap-3 rounded-2xl border border-line bg-surface-2 p-3 transition hover:-translate-y-0.5 hover:border-primary/40"
+                  className="flex h-full items-center gap-3 rounded-lg border border-line bg-surface-2 p-3 transition hover:border-primary/40"
                 >
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-fg">
                     <MapPin className="size-5" aria-hidden />

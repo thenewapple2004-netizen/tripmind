@@ -6,7 +6,7 @@ import { cn } from '@/components/ui/cn'
 import { formatCompactCurrency } from '@/lib/owner'
 
 const tile =
-  'group relative flex min-h-36 flex-col justify-between overflow-hidden rounded-3xl p-4 transition duration-300 hover:-translate-y-1 hover:shadow-lift'
+  'group relative flex min-h-36 flex-col justify-between overflow-hidden rounded-xl p-4 transition duration-300 hover:shadow-lift'
 
 export function QuickTiles({ overview }: { overview: OwnerDashboardOverview | undefined }) {
   const used = overview?.budget_utilization_pct ?? 0
@@ -15,7 +15,7 @@ export function QuickTiles({ overview }: { overview: OwnerDashboardOverview | un
     <ul className="grid grid-cols-2 gap-4 @2xl:grid-cols-4">
       <li>
         <Link to="/trips/new" className={cn(tile, 'h-full bg-primary text-primary-fg')}>
-          <span className="flex size-11 items-center justify-center rounded-2xl bg-primary-fg/10 transition group-hover:rotate-90">
+          <span className="flex size-11 items-center justify-center rounded-lg bg-primary-fg/10 transition group-hover:rotate-90">
             <Plus className="size-6" aria-hidden />
           </span>
           <span>
@@ -26,7 +26,7 @@ export function QuickTiles({ overview }: { overview: OwnerDashboardOverview | un
       </li>
       <li>
         <Link to="/itinerary" className={cn(tile, 'h-full border border-line bg-surface-2 text-fg hover:border-primary/40')}>
-          <span className="flex size-11 items-center justify-center rounded-2xl bg-info-soft text-info-soft-fg">
+          <span className="flex size-11 items-center justify-center rounded-lg bg-info-soft text-info-soft-fg">
             <CalendarDays className="size-6" aria-hidden />
           </span>
           <span>
@@ -69,15 +69,7 @@ export function QuickTiles({ overview }: { overview: OwnerDashboardOverview | un
           to="/planner"
           className={cn(tile, 'h-full border border-dashed border-primary/40 bg-primary-soft text-primary-soft-fg')}
         >
-          <svg
-            aria-hidden
-            viewBox="0 0 160 70"
-            className="pointer-events-none absolute inset-x-0 top-2 h-16 w-full text-primary/50"
-            fill="none"
-          >
-            <path d="M8 58 C 40 10, 70 70, 100 30 S 140 12, 154 20" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 5" strokeLinecap="round" />
-          </svg>
-          <span className="relative flex size-11 items-center justify-center rounded-2xl bg-primary/20">
+          <span className="relative flex size-11 items-center justify-center rounded-lg bg-primary/20">
             <Sparkles className="size-6" aria-hidden />
           </span>
           <span className="relative">

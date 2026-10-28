@@ -9,7 +9,7 @@ import { isDarkTheme, quickSwitchLabel } from '@/lib/theme'
 import { NAV_ITEMS, isNavActive } from './nav'
 
 const rowBase =
-  'group/item relative flex h-11 w-full items-center gap-3 rounded-2xl px-3 text-sm font-medium transition duration-200'
+  'group/item relative flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors'
 
 /** Tooltip that only appears for the icon-only (collapsed) sidebar. */
 function Tip({ label, show }: { label: string; show: boolean }) {
@@ -68,7 +68,7 @@ export function SidebarContent({
     cn(
       rowBase,
       active
-        ? 'bg-primary font-semibold text-primary-fg shadow-glow'
+        ? 'bg-primary-soft font-semibold text-primary-soft-fg before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-primary'
         : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
       collapsed && 'justify-center px-0',
     )
@@ -79,7 +79,7 @@ export function SidebarContent({
         to="/portal"
         onClick={onNavigate}
         aria-label="TripMind overview"
-        className={cn('flex items-center gap-3 rounded-2xl px-1.5', collapsed && 'justify-center px-0')}
+        className={cn('flex items-center gap-3 rounded-lg px-1.5', collapsed && 'justify-center px-0')}
       >
         <LogoMark />
         {!collapsed && <Wordmark />}

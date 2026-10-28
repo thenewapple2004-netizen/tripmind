@@ -87,11 +87,11 @@ export function DocumentUploader({ tripId }: { tripId: string }) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         className={cn(
-          'mt-3 flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-4 py-8 text-center transition',
+          'mt-3 flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 text-center transition',
           dragging ? 'border-primary bg-primary-soft/40' : 'border-line-strong bg-surface-2/50',
         )}
       >
-        <span className="flex size-11 items-center justify-center rounded-2xl bg-primary-soft text-primary-ink">
+        <span className="flex size-11 items-center justify-center rounded-lg bg-primary-soft text-primary-ink">
           <Upload className="size-5" aria-hidden />
         </span>
         <p className="text-sm text-fg">

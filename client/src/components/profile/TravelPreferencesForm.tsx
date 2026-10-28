@@ -74,7 +74,7 @@ export function TravelPreferencesForm({ profile }: { profile: Profile }) {
                   className={cn(
                     'h-9 rounded-full border px-4 text-sm font-medium transition',
                     on
-                      ? 'border-primary bg-primary text-primary-fg shadow-glow'
+                      ? 'border-primary bg-primary text-primary-fg'
                       : 'border-line bg-surface-2 text-fg-muted hover:border-line-strong hover:text-fg',
                   )}
                 >

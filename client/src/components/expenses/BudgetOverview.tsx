@@ -19,7 +19,7 @@ export function BudgetOverview({ summary }: BudgetOverviewProps) {
   const percentCapped = Math.min(100, Math.max(0, summary.percent_spent))
 
   return (
-    <div className="space-y-5 rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6">
+    <div className="space-y-5 rounded-lg border border-line bg-surface p-5 shadow-card sm:p-6">
       {/* Header Stat row */}
       <div className="grid gap-4 sm:grid-cols-4">
         <div>

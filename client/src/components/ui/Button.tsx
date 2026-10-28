@@ -7,13 +7,13 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'danger-outline'
 type Size = 'sm' | 'md' | 'lg'
 
 const base =
-  'inline-flex shrink-0 items-center justify-center gap-2 rounded-xl font-medium whitespace-nowrap ' +
-  'transition duration-200 select-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 ' +
+  'inline-flex shrink-0 items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap ' +
+  'transition duration-200 select-none disabled:pointer-events-none disabled:opacity-60 ' +
   'aria-disabled:pointer-events-none aria-disabled:opacity-60'
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-primary font-semibold text-primary-fg shadow-sm hover:bg-primary-hover hover:shadow-glow',
-  secondary: 'border border-line-strong bg-surface text-fg shadow-sm hover:bg-surface-2',
+  primary: 'bg-primary font-semibold text-primary-fg hover:bg-primary-hover',
+  secondary: 'border border-line-strong bg-surface text-fg hover:bg-surface-2',
   ghost: 'text-fg-muted hover:bg-surface-2 hover:text-fg',
   danger: 'bg-danger text-danger-fg shadow-sm hover:bg-danger-hover',
   'danger-outline':

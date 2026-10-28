@@ -55,7 +55,7 @@ export function OwnerPortalPage() {
     <div className="space-y-8">
       <header className="space-y-5">
         <div>
-          <h1 className="font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-fg sm:text-3xl">
             {greeting(new Date(), profile?.timezone)}, {firstName}
           </h1>
           <p className="mt-1 text-sm text-fg-muted">Here's where your travels stand today.</p>
@@ -73,7 +73,7 @@ export function OwnerPortalPage() {
       {dashboard.isError && (
         <div
           role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-danger-line bg-danger-soft p-4 text-sm text-danger-soft-fg"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger-line bg-danger-soft p-4 text-sm text-danger-soft-fg"
         >
           <p className="flex items-center gap-2">
             <CircleAlert className="size-4 shrink-0" aria-hidden />
@@ -91,7 +91,7 @@ export function OwnerPortalPage() {
         </div>
       )}
 
-      <section aria-labelledby="trips-heading" className="animate-rise">
+      <section aria-labelledby="trips-heading" className="">
         <SectionTitle title="Your trips" to="/" cta="See all" />
         <h2 id="trips-heading" className="sr-only">
           Your trips
@@ -111,7 +111,7 @@ export function OwnerPortalPage() {
           </Card>
         ) : featured.length === 0 ? (
           <Card className="flex flex-col items-center gap-4 border-dashed py-12 text-center">
-            <span className="flex size-14 items-center justify-center rounded-2xl bg-primary-soft text-primary-ink">
+            <span className="flex size-14 items-center justify-center rounded-lg bg-primary-soft text-primary-ink">
               <Luggage className="size-7" aria-hidden />
             </span>
             <div>
@@ -135,11 +135,11 @@ export function OwnerPortalPage() {
         )}
       </section>
 
-      <section aria-label="Quick actions" className="animate-rise [animation-delay:80ms]">
+      <section aria-label="Quick actions" className="">
         <QuickTiles overview={data?.overview} />
       </section>
 
-      <section aria-label="Activities and budget" className="grid gap-4 @2xl:grid-cols-2 animate-rise [animation-delay:140ms]">
+      <section aria-label="Activities and budget" className="grid gap-4 @2xl:grid-cols-2">
         <div>
           <WeekAgenda
             activities={activitiesQuery.data?.items ?? []}
@@ -148,11 +148,11 @@ export function OwnerPortalPage() {
           />
         </div>
         <div>
-          {data ? <BudgetWatch trips={data.upcoming_trips} /> : <Skeleton className="h-72 rounded-3xl" />}
+          {data ? <BudgetWatch trips={data.upcoming_trips} /> : <Skeleton className="h-72 rounded-xl" />}
         </div>
       </section>
 
-      <section aria-label="Spending insights" className="space-y-4 animate-rise [animation-delay:200ms]">
+      <section aria-label="Spending insights" className="space-y-4">
         <SectionTitle title="Spending insights" to="/expenses" cta="All expenses" />
         {data ? (
           <>
@@ -171,14 +171,14 @@ export function OwnerPortalPage() {
           </>
         ) : dashboard.isPending ? (
           <div className="grid gap-4 @2xl:grid-cols-5" role="status" aria-label="Loading insights">
-            <Skeleton className="h-72 rounded-3xl @2xl:col-span-3" />
-            <Skeleton className="h-72 rounded-3xl @2xl:col-span-2" />
+            <Skeleton className="h-72 rounded-xl @2xl:col-span-3" />
+            <Skeleton className="h-72 rounded-xl @2xl:col-span-2" />
           </div>
         ) : null}
       </section>
 
       {data && (
-        <section aria-label="Recent changes" className="animate-rise [animation-delay:260ms]">
+        <section aria-label="Recent changes" className="">
           <RecentTabs
             activities={data.recent_activities}
             expenses={data.recent_expenses}

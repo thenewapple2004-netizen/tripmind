@@ -22,7 +22,7 @@ function Kpi({ label, value, helper, danger }: { label: string; value: string; h
   return (
     <Card className="p-4">
       <p className="text-xs font-medium text-fg-subtle">{label}</p>
-      <p className={cn('mt-1 font-display text-2xl font-extrabold tracking-tight tabular-nums', danger ? 'text-danger' : 'text-fg')}>
+      <p className={cn('mt-1 font-display text-2xl font-semibold tracking-tight tabular-nums', danger ? 'text-danger' : 'text-fg')}>
         {value}
       </p>
       <p className="mt-0.5 text-xs text-fg-subtle">{helper}</p>
@@ -49,7 +49,7 @@ export function ExpensesPage() {
       {dashboard.isPending ? (
         <div role="status" aria-label="Loading budget figures" className="grid grid-cols-2 gap-4 @2xl:grid-cols-4">
           {Array.from({ length: 4 }, (_, i) => (
-            <Skeleton key={i} className="h-24 rounded-3xl" />
+            <Skeleton key={i} className="h-24 rounded-xl" />
           ))}
         </div>
       ) : data ? (
@@ -117,18 +117,18 @@ export function ExpensesPage() {
         {expenses.isPending ? (
           <div role="status" aria-label="Loading expenses" className="space-y-2">
             {Array.from({ length: 4 }, (_, i) => (
-              <Skeleton key={i} className="h-14 rounded-2xl" />
+              <Skeleton key={i} className="h-14 rounded-lg" />
             ))}
           </div>
         ) : expenses.isError ? (
-          <div role="alert" className="flex items-center justify-between gap-3 rounded-2xl bg-danger-soft p-4 text-sm text-danger-soft-fg">
+          <div role="alert" className="flex items-center justify-between gap-3 rounded-lg bg-danger-soft p-4 text-sm text-danger-soft-fg">
             We couldn't load your expenses.
             <Button size="sm" variant="secondary" onClick={() => expenses.refetch()} loading={expenses.isFetching}>
               Retry
             </Button>
           </div>
         ) : expenses.data.items.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-line-strong py-10 text-center text-sm text-fg-subtle">
+          <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-line-strong py-10 text-center text-sm text-fg-subtle">
             <Wallet className="size-7" aria-hidden />
             {category === 'all' ? 'No expenses logged yet.' : `No ${category} expenses yet.`}
           </div>
@@ -136,7 +136,7 @@ export function ExpensesPage() {
           <ul className="divide-y divide-line">
             {expenses.data.items.map((e) => (
               <li key={e.id}>
-                <Link to={`/trips/${e.trip_id}`} className="flex items-center gap-3 rounded-2xl px-2 py-3 transition hover:bg-surface-2">
+                <Link to={`/trips/${e.trip_id}`} className="flex items-center gap-3 rounded-lg px-2 py-3 transition hover:bg-surface-2">
                   <span
                     aria-hidden
                     className="size-10 shrink-0 rounded-xl"

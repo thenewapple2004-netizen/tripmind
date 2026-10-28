@@ -47,7 +47,7 @@ function Row({ item, tripId }: { item: ChecklistItem; tripId: string }) {
   }
 
   return (
-    <li className="group flex items-center gap-3 rounded-2xl px-2 py-2 transition hover:bg-surface-2">
+    <li className="group flex items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-surface-2">
       <button
         type="button"
         role="checkbox"
@@ -130,8 +130,8 @@ export function ChecklistPanel({ trip }: { trip: Trip }) {
   if (isPending) {
     return (
       <div role="status" aria-label="Loading checklist" className="space-y-3">
-        <Skeleton className="h-24 rounded-3xl" />
-        <Skeleton className="h-48 rounded-3xl" />
+        <Skeleton className="h-24 rounded-xl" />
+        <Skeleton className="h-48 rounded-xl" />
       </div>
     )
   }
@@ -154,12 +154,12 @@ export function ChecklistPanel({ trip }: { trip: Trip }) {
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="font-display text-xl font-extrabold tracking-tight text-fg">Checklist</h2>
+            <h2 className="font-display text-xl font-semibold tracking-tight text-fg">Checklist</h2>
             <p className="mt-1 text-sm text-fg-muted">
               {items.length === 0 ? 'Everything to sort out before you go.' : done === items.length ? 'All done. Have a great trip!' : `${done} of ${items.length} done`}
             </p>
           </div>
-          {items.length > 0 && <p className="font-display text-3xl font-extrabold text-primary-ink tabular-nums">{percent}%</p>}
+          {items.length > 0 && <p className="font-display text-3xl font-semibold text-primary-ink tabular-nums">{percent}%</p>}
         </div>
         {items.length > 0 && (
           <div
@@ -229,8 +229,8 @@ export function ChecklistPanel({ trip }: { trip: Trip }) {
       </Card>
 
       {items.length === 0 ? (
-        <div className="flex items-center gap-4 rounded-3xl border border-dashed border-line-strong bg-surface p-5 text-sm text-fg-muted">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-ink">
+        <div className="flex items-center gap-4 rounded-xl border border-dashed border-line-strong bg-surface p-5 text-sm text-fg-muted">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary-ink">
             <ListChecks className="size-6" aria-hidden />
           </span>
           Your checklist is empty. Add your first item above or pick one of the ideas.

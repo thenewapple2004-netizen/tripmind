@@ -11,7 +11,7 @@ import { ReportDownloadButton } from './ReportDownloadButton'
 type Tab = 'activities' | 'expenses' | 'reports'
 const isoDay = (value: string) => value.slice(0, 10)
 
-const rowClass = 'flex items-center gap-3 rounded-2xl p-2.5 transition hover:bg-surface-2'
+const rowClass = 'flex items-center gap-3 rounded-lg p-2.5 transition hover:bg-surface-2'
 
 export function RecentTabs({
   activities,

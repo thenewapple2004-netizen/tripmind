@@ -17,10 +17,10 @@ import { formatDate } from '@/lib/trips'
 function ProfileSkeleton() {
   return (
     <div role="status" aria-label="Loading your profile" className="space-y-6">
-      <Skeleton className="h-52 rounded-3xl" />
+      <Skeleton className="h-52 rounded-xl" />
       <div className="grid gap-6 @3xl:grid-cols-2">
-        <Skeleton className="h-96 rounded-3xl" />
-        <Skeleton className="h-96 rounded-3xl" />
+        <Skeleton className="h-96 rounded-xl" />
+        <Skeleton className="h-96 rounded-xl" />
       </div>
     </div>
   )
@@ -56,13 +56,13 @@ export function ProfilePage() {
       ) : (
         <>
           <Card className="relative isolate overflow-hidden p-0">
-            <div aria-hidden className="h-24 bg-[radial-gradient(40rem_14rem_at_20%_0%,var(--glow),transparent),linear-gradient(135deg,var(--surface-3),var(--surface-2))]" />
+            <div aria-hidden className="h-16 border-b border-line bg-surface-2" />
             <div className="flex flex-col gap-6 px-5 pb-6 sm:flex-row sm:px-8">
               <div className="-mt-14 sm:-mt-16">
                 <AvatarUploader profile={profile} initials={identity.initials} />
               </div>
               <div className="min-w-0 flex-1 sm:pt-4">
-                <h2 className="truncate font-display text-2xl font-extrabold tracking-tight text-fg">{identity.name}</h2>
+                <h2 className="truncate font-display text-2xl font-semibold tracking-tight text-fg">{identity.name}</h2>
                 <p className="truncate text-sm text-fg-muted">{profile.email}</p>
                 {profile.bio && <p className="mt-3 max-w-xl text-sm whitespace-pre-line text-fg-muted">{profile.bio}</p>}
                 <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-fg-subtle">
@@ -104,8 +104,8 @@ export function ProfilePage() {
                       ['Expenses', overview.total_expenses_count],
                     ] as const
                   ).map(([label, value]) => (
-                    <div key={label} className="rounded-2xl bg-surface-2 p-3 text-center">
-                      <dd className="font-display text-xl font-extrabold tabular-nums text-fg">{value}</dd>
+                    <div key={label} className="rounded-lg bg-surface-2 p-3 text-center">
+                      <dd className="font-display text-xl font-semibold tabular-nums text-fg">{value}</dd>
                       <dt className="text-[11px] text-fg-subtle">{label}</dt>
                     </div>
                   ))}

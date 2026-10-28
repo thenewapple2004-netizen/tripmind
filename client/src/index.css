@@ -155,13 +155,6 @@
   --skeleton-shine: #1b3a50;
 }
 
-/* A faint horizon glow behind the page, so the navy never feels flat. */
-:root[data-theme='ocean'] body {
-  background-image:
-    radial-gradient(60rem 28rem at 12% -8%, rgb(56 150 170 / 0.14), transparent 70%),
-    radial-gradient(48rem 26rem at 105% 108%, rgb(161 217 155 / 0.07), transparent 70%);
-  background-attachment: fixed;
-}
 
 /* Desert dusk: warm charcoal-brown surfaces with a sunset amber accent. */
 :root[data-theme='dusk'] {
@@ -210,12 +203,6 @@
   --skeleton-shine: #34271f;
 }
 
-:root[data-theme='dusk'] body {
-  background-image:
-    radial-gradient(60rem 28rem at 10% -10%, rgb(224 112 72 / 0.14), transparent 70%),
-    radial-gradient(48rem 26rem at 105% 108%, rgb(242 184 114 / 0.08), transparent 70%);
-  background-attachment: fixed;
-}
 
 /* Twilight: deep indigo-violet surfaces with a lilac accent. */
 :root[data-theme='twilight'] {
@@ -264,12 +251,6 @@
   --skeleton-shine: #2a2556;
 }
 
-:root[data-theme='twilight'] body {
-  background-image:
-    radial-gradient(60rem 28rem at 8% -10%, rgb(139 92 246 / 0.18), transparent 70%),
-    radial-gradient(48rem 26rem at 105% 108%, rgb(236 130 190 / 0.09), transparent 70%);
-  background-attachment: fixed;
-}
 
 /* Sand light: warm cream surfaces with a terracotta accent. */
 :root[data-theme='sand'] {
@@ -360,10 +341,11 @@
   --color-warn-soft: var(--warn-soft);
   --color-warn-soft-fg: var(--warn-soft-fg);
 
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.14), 0 8px 24px -12px rgb(0 0 0 / 0.28);
-  --shadow-lift: 0 4px 14px rgb(0 0 0 / 0.18), 0 18px 40px -14px rgb(0 0 0 / 0.38);
-  --shadow-pop: 0 18px 48px rgb(0 0 0 / 0.45);
-  --shadow-glow: 0 0 0 1px var(--glow), 0 10px 30px -10px var(--glow);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06);
+  --shadow-lift: 0 2px 8px rgb(0 0 0 / 0.14);
+  --shadow-pop: 0 12px 32px rgb(0 0 0 / 0.32);
+  /* A focus-style ring for selected states. It is not a glow. */
+  --shadow-glow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
 
   --animate-shimmer: shimmer 1.6s ease-in-out infinite;
   --animate-toast-in: toast-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -371,6 +353,7 @@
   --animate-fade-in: fade-in 0.25s ease-out;
   --animate-rise: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-drawer-in: drawer-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-drawer-right: drawer-right 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 
   @keyframes shimmer {
     0% {
@@ -408,6 +391,16 @@
     to {
       opacity: 1;
       transform: none;
+    }
+  }
+  @keyframes drawer-right {
+    from {
+      transform: translateX(2.5rem);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
     }
   }
   @keyframes drawer-in {

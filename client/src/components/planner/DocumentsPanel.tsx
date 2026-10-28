@@ -42,7 +42,7 @@ export function DocumentItem({
   }
 
   return (
-    <li className="flex items-center gap-3 rounded-2xl p-2.5 transition hover:bg-surface-2">
+    <li className="flex items-center gap-3 rounded-lg p-2.5 transition hover:bg-surface-2">
       <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-ink">
         <Icon className="size-5" aria-hidden />
       </span>
@@ -92,7 +92,7 @@ export function DocumentsPanel({ trip }: { trip: Trip }) {
   return (
     <section aria-label="Travel documents" className="space-y-5">
       <Card>
-        <h2 className="font-display text-xl font-extrabold tracking-tight text-fg">Travel documents</h2>
+        <h2 className="font-display text-xl font-semibold tracking-tight text-fg">Travel documents</h2>
         <p className="mt-1 mb-4 flex items-start gap-2 text-sm text-fg-muted">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary-ink" aria-hidden />
           Private to you. Files are checked on upload, stored with your account, and can only be opened while you’re signed in.
@@ -101,7 +101,7 @@ export function DocumentsPanel({ trip }: { trip: Trip }) {
       </Card>
 
       {isPending ? (
-        <Skeleton className="h-32 rounded-3xl" />
+        <Skeleton className="h-32 rounded-xl" />
       ) : isError ? (
         <StateCard tone="danger" icon={CircleAlert} title="Couldn’t load your documents" description="Something went wrong while fetching this trip’s documents.">
           <Button variant="secondary" onClick={() => refetch()} loading={isFetching}>
@@ -109,7 +109,7 @@ export function DocumentsPanel({ trip }: { trip: Trip }) {
           </Button>
         </StateCard>
       ) : documents.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-line-strong bg-surface p-6 text-center text-sm text-fg-muted">
+        <div className="rounded-xl border border-dashed border-line-strong bg-surface p-6 text-center text-sm text-fg-muted">
           No documents yet. Add your passport scan, tickets or booking confirmations so they’re ready when you need them.
         </div>
       ) : (

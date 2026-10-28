@@ -23,7 +23,7 @@ export function OwnerProfileCard({ tripId }: OwnerProfileCardProps) {
     return (
       <section
         aria-label="Loading owner profile"
-        className="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6"
+        className="rounded-lg border border-line bg-surface p-5 shadow-card sm:p-6"
       >
         <div className="flex items-center gap-3 mb-4">
           <Skeleton className="size-10 rounded-xl" />
@@ -44,7 +44,7 @@ export function OwnerProfileCard({ tripId }: OwnerProfileCardProps) {
     return (
       <section
         aria-label="Owner profile unavailable"
-        className="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6"
+        className="rounded-lg border border-line bg-surface p-5 shadow-card sm:p-6"
       >
         <div className="flex items-start gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-fg-muted">
@@ -94,7 +94,7 @@ export function OwnerProfileCard({ tripId }: OwnerProfileCardProps) {
   return (
     <section
       aria-labelledby="owner-profile-heading"
-      className="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6"
+      className="rounded-lg border border-line bg-surface p-5 shadow-card sm:p-6"
     >
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         {/* Avatar + identity */}
@@ -102,7 +102,7 @@ export function OwnerProfileCard({ tripId }: OwnerProfileCardProps) {
           {/* Gradient avatar */}
           <div
             aria-hidden
-            className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 to-primary text-white text-sm font-bold shadow-sm select-none"
+            className="relative flex size-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/80 to-primary text-white text-sm font-bold shadow-sm select-none"
           >
             {initials}
             {/* Online indicator */}

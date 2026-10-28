@@ -41,8 +41,8 @@ export function SettingsPage() {
 
       {isPending ? (
         <div role="status" aria-label="Loading settings" className="space-y-4">
-          <Skeleton className="h-64 rounded-3xl" />
-          <Skeleton className="h-56 rounded-3xl" />
+          <Skeleton className="h-64 rounded-xl" />
+          <Skeleton className="h-56 rounded-xl" />
         </div>
       ) : isError || !profile ? (
         <StateCard tone="danger" icon={CircleAlert} title="Couldn’t load your settings" description="Something went wrong while contacting the account service.">

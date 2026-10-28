@@ -29,7 +29,7 @@ export function EditTripPage() {
       <BackLink to={detailsPath}>Back to trip</BackLink>
       <PageHeader title="Edit trip" description={trip ? `Update the details for “${trip.title}”.` : undefined} />
 
-      <div className="mt-8 rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-8">
+      <div className="mt-8 rounded-lg border border-line bg-surface p-5 shadow-card sm:p-8">
         {isPending || !trip ? (
           <div role="status" aria-label="Loading trip" className="space-y-6">
             {Array.from({ length: 4 }, (_, i) => (

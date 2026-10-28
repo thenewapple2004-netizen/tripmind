@@ -5,7 +5,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/Toast'
 import { useDeleteBooking, useUpdateBooking } from '@/hooks/useBookings'
 import { todayISO } from '@/lib/bookings'
-import { BookingDetailsDialog } from './BookingDetailsDialog'
+import { BookingDetailsDrawer } from './BookingDetailsDrawer'
 import { BookingDialog } from './BookingDialog'
 
 type AnyBooking = Booking | OwnerBooking
@@ -56,7 +56,7 @@ export function useBookingDialogs({ tripId }: { tripId?: string } = {}): {
 
   const element = (
     <>
-      <BookingDetailsDialog
+      <BookingDetailsDrawer
         booking={details}
         today={today}
         onClose={() => setDetails(null)}

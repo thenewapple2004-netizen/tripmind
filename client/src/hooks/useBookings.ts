@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { bookingsApi, type BookingQuery } from '@/api/bookings'
-import type { BookingInput } from '@/api/types'
+import type { BookingInput, OwnerBooking } from '@/api/types'
 import { itineraryKey } from './useItinerary'
 
 export const bookingKeys = {
@@ -15,6 +15,32 @@ export function useOwnerBookings(params: BookingQuery) {
   return useQuery({
     queryKey: bookingKeys.owner(params),
     queryFn: ({ signal }) => bookingsApi.listAll(params, signal),
+    placeholderData: keepPreviousData,
+  })
+}
+
+const ALL_PAGE_SIZE = 50 // the API's maximum
+const ALL_MAX_PAGES = 20 // a safety stop at 1,000 bookings
+
+/**
+ * Every booking that matches the filters. The Booking Hub groups bookings under their trips, and a group
+ * built from half a page would be wrong, so this reads the existing paginated endpoint to the end.
+ */
+export function useAllOwnerBookings(params: Omit<BookingQuery, 'page' | 'page_size'>) {
+  return useQuery({
+    queryKey: ['bookings', 'all', params] as const,
+    queryFn: async ({ signal }) => {
+      const items: OwnerBooking[] = []
+      let page = 1
+      let totalPages = 1
+      do {
+        const result = await bookingsApi.listAll({ ...params, page, page_size: ALL_PAGE_SIZE }, signal)
+        items.push(...result.items)
+        totalPages = result.total_pages
+        page += 1
+      } while (page <= totalPages && page <= ALL_MAX_PAGES)
+      return { items, truncated: page - 1 < totalPages }
+    },
     placeholderData: keepPreviousData,
   })
 }

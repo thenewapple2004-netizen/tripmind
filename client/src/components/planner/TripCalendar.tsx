@@ -118,7 +118,7 @@ export function TripCalendar({ days, conflictDates, today, dragging, onSelectDay
                 count > 0 ? 'border-primary/30 bg-primary-soft text-primary-soft-fg' : 'border-line bg-surface-2 text-fg-muted',
                 'hover:border-primary hover:text-fg',
                 iso === today && 'ring-1 ring-primary ring-inset',
-                dragOver === iso && 'scale-105 border-primary bg-primary text-primary-fg shadow-glow',
+                dragOver === iso && 'scale-105 border-primary bg-primary text-primary-fg',
                 clash && 'border-warn-soft-fg/60',
               )}
             >

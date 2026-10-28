@@ -74,7 +74,7 @@ export function RegisterPage() {
   return (
     <div className="flex min-h-[70vh] flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="text-center font-display text-3xl font-extrabold tracking-tight text-fg">
+        <h2 className="text-center font-display text-3xl font-semibold tracking-tight text-fg">
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-fg-muted">
@@ -86,7 +86,7 @@ export function RegisterPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="rounded-3xl border border-line bg-surface p-6 shadow-card sm:p-8">
+        <div className="rounded-xl border border-line bg-surface p-6 shadow-card sm:p-8">
           <form className="space-y-5" onSubmit={handleSubmit} noValidate>
             {generalError && (
               <div

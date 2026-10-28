@@ -23,7 +23,7 @@ export function TripSearchBar({ className }: { className?: string }) {
 
   return (
     <form role="search" onSubmit={submit} className={cn('flex flex-col gap-3 sm:flex-row', className)}>
-      <div className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-line bg-surface pr-4 pl-1.5 shadow-card transition focus-within:border-primary/60 focus-within:shadow-glow">
+      <div className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-line bg-surface pr-4 pl-1.5 shadow-card transition focus-within:border-primary/60">
         <button
           type="submit"
           aria-label="Search trips"

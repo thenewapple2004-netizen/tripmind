@@ -120,7 +120,7 @@ export function ExpenseDialog({ open, trip, expense, onClose }: ExpenseDialogPro
       onClick={(e) => {
         if (e.target === dialogRef.current && !isSubmitting) onClose()
       }}
-      className="animate-dialog-in m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-line bg-surface p-0 text-fg shadow-pop backdrop:bg-slate-950/55 backdrop:backdrop-blur-[2px]"
+      className="animate-dialog-in m-auto w-[calc(100%-2rem)] max-w-lg rounded-xl border border-line bg-surface p-0 text-fg shadow-pop backdrop:bg-slate-950/55 backdrop:backdrop-blur-[2px]"
     >
       <div className="flex items-center justify-between border-b border-line px-6 py-4">
         <h2 id={titleId} className="text-lg font-semibold">

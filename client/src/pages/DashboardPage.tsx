@@ -235,7 +235,7 @@ export function DashboardPage() {
             <div
               role="group"
               aria-label="Filter by status"
-              className="flex flex-wrap gap-1 rounded-2xl border border-line bg-surface p-1 shadow-sm"
+              className="flex flex-wrap gap-1 rounded-lg border border-line bg-surface p-1 shadow-sm"
             >
               {STATUS_FILTERS.map((value) => (
                 <button

@@ -11,25 +11,13 @@ export function PlannerPage() {
       <PageHeader title="AI Planner" description="A future TripMind feature. Nothing here is live yet." />
 
       <Card className="relative isolate overflow-hidden px-6 py-14 text-center sm:py-20">
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 bg-[radial-gradient(40rem_20rem_at_50%_0%,var(--glow),transparent)]"
-        />
-        <svg
-          aria-hidden
-          viewBox="0 0 400 120"
-          fill="none"
-          className="pointer-events-none absolute inset-x-0 bottom-4 -z-10 mx-auto h-28 w-full max-w-xl text-primary/30"
-        >
-          <path d="M10 100 C 90 10, 150 120, 220 50 S 340 10, 390 40" stroke="currentColor" strokeWidth="2" strokeDasharray="5 8" strokeLinecap="round" />
-        </svg>
-        <span className="mx-auto flex size-16 items-center justify-center rounded-3xl bg-primary text-primary-fg shadow-glow">
+        <span className="mx-auto flex size-16 items-center justify-center rounded-xl bg-primary text-primary-fg">
           <Sparkles className="size-8" aria-hidden />
         </span>
         <p className="mx-auto mt-5 w-fit rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold tracking-wide text-primary-soft-fg uppercase">
           Coming soon
         </p>
-        <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">
+        <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-fg sm:text-3xl">
           Trip planning, with a little help
         </h2>
         <p className="mx-auto mt-3 max-w-lg text-sm text-fg-muted">

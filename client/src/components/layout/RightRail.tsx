@@ -126,9 +126,9 @@ function tripDayLabel(trip: Trip, day: string): string {
 function RailSkeleton() {
   return (
     <div role="status" aria-label="Loading your travel summary" className="space-y-4">
-      <Skeleton className="h-20 rounded-3xl" />
-      <Skeleton className="h-72 rounded-3xl" />
-      <Skeleton className="h-40 rounded-3xl" />
+      <Skeleton className="h-20 rounded-xl" />
+      <Skeleton className="h-72 rounded-xl" />
+      <Skeleton className="h-40 rounded-xl" />
     </div>
   )
 }
@@ -140,7 +140,7 @@ function ProfileCard() {
   const since = created ? formatDate(isoDay(created)) : null
   return (
     <Card className="p-0 transition hover:border-primary/40">
-      <Link to="/profile" aria-label={`${name} — view your profile`} className="flex items-center gap-3 rounded-3xl p-4">
+      <Link to="/profile" aria-label={`${name} — view your profile`} className="flex items-center gap-3 rounded-xl p-4">
         <Avatar initials={initials} src={avatarUrl} className="size-12" />
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-sm font-semibold text-fg">{name}</p>
@@ -157,7 +157,7 @@ function ActivityRow({ activity }: { activity: OwnerRecentActivity }) {
     <li>
       <Link
         to={`/trips/${activity.trip_id}?tab=itinerary`}
-        className="flex items-center gap-3 rounded-2xl p-2 transition hover:bg-surface-2"
+        className="flex items-center gap-3 rounded-lg p-2 transition hover:bg-surface-2"
       >
         <span className="flex size-10 shrink-0 flex-col items-center justify-center rounded-xl bg-primary-soft text-primary-soft-fg">
           <span className="text-[9px] leading-none font-semibold uppercase">
@@ -289,7 +289,7 @@ export function RightRail({ className }: { className?: string }) {
                   <li key={trip.id}>
                     <Link
                       to={`/trips/${trip.id}`}
-                      className="group flex items-center gap-3 rounded-2xl p-2 transition hover:bg-surface-2"
+                      className="group flex items-center gap-3 rounded-lg p-2 transition hover:bg-surface-2"
                     >
                       <TripCover destination={trip.destination} className="size-12 shrink-0 rounded-xl" />
                       <span className="min-w-0 flex-1">
@@ -343,7 +343,7 @@ export function RightRail({ className }: { className?: string }) {
                   <li key={r.key}>
                     <Link
                       to={r.to}
-                      className="flex items-start gap-3 rounded-2xl p-2 text-xs text-fg-muted transition hover:bg-surface-2 hover:text-fg"
+                      className="flex items-start gap-3 rounded-lg p-2 text-xs text-fg-muted transition hover:bg-surface-2 hover:text-fg"
                     >
                       <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-xl', TONE[r.tone])}>
                         <r.icon className="size-4" aria-hidden />
@@ -368,7 +368,7 @@ export function RightRail({ className }: { className?: string }) {
                     [FileText, 'Reports', dashboard.data.overview.total_reports_count],
                   ] as const
                 ).map(([Icon, label, value]) => (
-                  <div key={label} className="rounded-2xl bg-surface-2 p-3">
+                  <div key={label} className="rounded-lg bg-surface-2 p-3">
                     <dt className="flex items-center gap-1.5 text-[11px] font-medium text-fg-subtle">
                       <Icon className="size-3.5 text-primary-ink" aria-hidden />
                       {label}

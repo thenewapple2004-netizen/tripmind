@@ -1,12 +1,16 @@
-import { CalendarClock, ArrowRight } from 'lucide-react'
 import type { OwnerBooking } from '@/api/types'
-import { Card, CardHeader } from '@/components/ui/Card'
-import { cn } from '@/components/ui/cn'
-import { countdown, formatBookingWhen } from '@/lib/bookings'
+import { bookingDuration, countdown, timingTone } from '@/lib/bookings'
 import { formatMoneyIn } from '@/lib/money'
-import { BookingStatusBadge, TypeTile } from './meta'
+import { parseISODate } from '@/lib/trips'
+import { BookingStatusBadge, TYPE_META, Timing } from './meta'
+import { WhenText } from './WhenText'
 
-/** The next few reservations, always shown regardless of the filters below it. */
+const month = new Intl.DateTimeFormat('en-US', { month: 'short' })
+
+/**
+ * The next few reservations, compact: a date, what and where, when and for how long, its status and
+ * its cost. Timing ("Today", "In 5 days") is text; only the reservation status is a badge.
+ */
 export function UpcomingBookings({
   items,
   today,
@@ -20,46 +24,73 @@ export function UpcomingBookings({
 }) {
   if (items.length === 0) return null
   return (
-    <Card>
-      <CardHeader
-        title="Coming up"
-        description="Your next reservations, soonest first"
-        icon={<CalendarClock className="size-4" aria-hidden />}
-        action={
-          <button type="button" onClick={onShowAll} className="group flex items-center gap-1 text-xs font-medium text-primary-ink hover:underline">
-            See all upcoming
-            <ArrowRight className="size-3.5 transition group-hover:translate-x-0.5" aria-hidden />
-          </button>
-        }
-      />
-      <ul className="grid gap-2 @2xl:grid-cols-2">
+    <section aria-labelledby="upcoming-heading" className="rounded-xl border border-line bg-surface">
+      <header className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+        <div className="min-w-0">
+          <h2 id="upcoming-heading" className="text-sm font-semibold text-fg">Upcoming reservations</h2>
+          <p className="text-xs text-fg-subtle">Pending and confirmed, soonest first</p>
+        </div>
+        <button type="button" onClick={onShowAll} className="shrink-0 text-xs font-medium text-primary-ink hover:underline">
+          View all
+        </button>
+      </header>
+      <ul className="divide-y divide-line">
         {items.map((b) => {
-          const when = countdown(b, today)
+          const start = parseISODate(b.start_date)
+          const duration = bookingDuration(b)
+          const Icon = TYPE_META[b.type].icon
+          const timing = <Timing label={countdown(b, today)} tone={timingTone(b, today)} />
           return (
-            <li key={b.id} className="min-w-0">
+            <li key={b.id}>
               <button
                 type="button"
                 onClick={() => onOpen(b)}
-                className="flex w-full items-center gap-3 rounded-2xl border border-line bg-surface-2 p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/40"
+                className="grid w-full grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-2 @2xl:grid-cols-[2.75rem_minmax(0,1.5fr)_minmax(0,1.4fr)_6.5rem_6rem] @2xl:gap-x-4"
               >
-                <TypeTile type={b.type} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-fg">{b.title}</span>
-                  <span className="block truncate text-xs text-fg-subtle tabular-nums">{formatBookingWhen(b)}</span>
-                  <span className="block truncate text-xs text-fg-subtle">{b.trip_title}</span>
+                <span className="flex flex-col items-center rounded-md border border-line py-1 leading-none" aria-hidden>
+                  <span className="text-[10px] font-medium text-fg-subtle uppercase">{month.format(start)}</span>
+                  <span className="mt-0.5 text-base font-semibold text-fg tabular-nums">{start.getDate()}</span>
                 </span>
-                <span className="flex shrink-0 flex-col items-end gap-1">
-                  <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-bold', when === 'Today' || when === 'Tomorrow' || when === 'In progress' ? 'bg-primary text-primary-fg' : 'bg-primary-soft text-primary-soft-fg')}>
-                    {when}
+
+                <span className="min-w-0">
+                  <span className="flex items-center gap-1.5 text-sm font-medium text-fg">
+                    <Icon className="size-3.5 shrink-0 text-fg-subtle" aria-hidden />
+                    <span className="truncate" title={b.title}>{b.title}</span>
                   </span>
-                  <BookingStatusBadge status={b.status} className="px-2 py-0.5 text-[10px]" />
-                  <span className="text-[11px] font-semibold text-fg-muted tabular-nums">{formatMoneyIn(b.total_cost, b.currency)}</span>
+                  <span className="block truncate text-xs text-fg-subtle" title={b.trip_title}>{b.trip_title}</span>
+                  {/* Narrow screens: the schedule folds under the name */}
+                  <span className="mt-0.5 block text-xs text-fg-muted tabular-nums @2xl:hidden">
+                    <WhenText booking={b} />
+                  </span>
+                  <span className="block text-xs text-fg-subtle @2xl:hidden">
+                    {timing}
+                    {duration && ` · ${duration}`}
+                  </span>
+                </span>
+
+                <span className="hidden min-w-0 @2xl:block">
+                  <span className="block text-sm text-fg tabular-nums"><WhenText booking={b} /></span>
+                  <span className="block text-xs text-fg-subtle">
+                    {timing}
+                    {duration && ` · ${duration}`}
+                  </span>
+                </span>
+
+                <span className="hidden @2xl:block">
+                  <BookingStatusBadge status={b.status} />
+                </span>
+
+                <span className="flex flex-col items-end gap-1 @2xl:block @2xl:text-right">
+                  <span className="text-sm font-medium text-fg tabular-nums">{formatMoneyIn(b.total_cost, b.currency)}</span>
+                  <span className="@2xl:hidden">
+                    <BookingStatusBadge status={b.status} />
+                  </span>
                 </span>
               </button>
             </li>
           )
         })}
       </ul>
-    </Card>
+    </section>
   )
 }

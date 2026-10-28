@@ -3,7 +3,7 @@ import { CircleAlert, Eye, EyeOff } from 'lucide-react'
 import { cn } from './cn'
 
 const inputBase =
-  'block h-11 w-full rounded-lg border bg-surface px-3 text-base text-fg shadow-sm transition-colors ' +
+  'block h-11 w-full rounded-lg border bg-surface px-3 text-base text-fg transition-colors sm:h-10 ' +
   'placeholder:text-fg-subtle focus:outline-none focus:ring-3 ' +
   'disabled:opacity-60 sm:text-sm'
 

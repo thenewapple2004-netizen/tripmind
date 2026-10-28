@@ -32,7 +32,7 @@ export function BudgetWatch({ trips }: { trips: OwnerUpcomingTrip[] }) {
               <li key={trip.id}>
                 <Link
                   to={`/trips/${trip.id}`}
-                  className="group flex items-center gap-3 rounded-2xl p-1.5 transition hover:bg-surface-2"
+                  className="group flex items-center gap-3 rounded-lg p-1.5 transition hover:bg-surface-2"
                 >
                   <span aria-hidden className="w-5 text-center text-xs font-bold text-fg-subtle tabular-nums">
                     {String(i + 1).padStart(2, '0')}

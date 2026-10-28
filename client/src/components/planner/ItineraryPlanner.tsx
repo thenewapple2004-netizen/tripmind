@@ -19,12 +19,12 @@ import { TripCalendar } from './TripCalendar'
 
 function Stat({ icon, label, value, helper, tone = 'default' }: { icon: React.ReactNode; label: string; value: string; helper: string; tone?: 'default' | 'warn' }) {
   return (
-    <div className={`rounded-2xl border p-4 ${tone === 'warn' ? 'border-warn-soft-fg/40 bg-warn-soft/40' : 'border-line bg-surface'}`}>
+    <div className={`rounded-lg border p-4 ${tone === 'warn' ? 'border-warn-soft-fg/40 bg-warn-soft/40' : 'border-line bg-surface'}`}>
       <div className="flex items-center justify-between text-xs font-medium text-fg-subtle">
         {label}
         <span className={tone === 'warn' ? 'text-warn-soft-fg' : 'text-primary-ink'}>{icon}</span>
       </div>
-      <p className="mt-1.5 font-display text-2xl font-extrabold tracking-tight text-fg tabular-nums">{value}</p>
+      <p className="mt-1.5 font-display text-2xl font-semibold tracking-tight text-fg tabular-nums">{value}</p>
       <p className="mt-0.5 text-xs text-fg-muted">{helper}</p>
     </div>
   )
@@ -111,10 +111,10 @@ export function ItineraryPlanner({ trip }: { trip: Trip }) {
       <div role="status" aria-label="Loading itinerary" className="space-y-4">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {Array.from({ length: 4 }, (_, i) => (
-            <Skeleton key={i} className="h-24 rounded-2xl" />
+            <Skeleton key={i} className="h-24 rounded-lg" />
           ))}
         </div>
-        <Skeleton className="h-64 rounded-3xl" />
+        <Skeleton className="h-64 rounded-xl" />
       </div>
     )
   }
@@ -138,7 +138,7 @@ export function ItineraryPlanner({ trip }: { trip: Trip }) {
     <section aria-label="Itinerary planner" className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-display text-xl font-extrabold tracking-tight text-fg">Itinerary</h2>
+          <h2 className="font-display text-xl font-semibold tracking-tight text-fg">Itinerary</h2>
           <p className="mt-1 text-sm text-fg-muted">Plan each day, set times, and drag activities between days. Confirmed bookings appear on their days too.</p>
         </div>
         <Button variant="primary" icon={<CalendarPlus className="size-4" aria-hidden />} onClick={() => setDialog({ activity: null })}>
@@ -160,7 +160,7 @@ export function ItineraryPlanner({ trip }: { trip: Trip }) {
       </div>
 
       {conflictCount > 0 && (
-        <div role="alert" className="rounded-2xl border border-warn-soft-fg/40 bg-warn-soft/50 p-4 text-sm">
+        <div role="alert" className="rounded-lg border border-warn-soft-fg/40 bg-warn-soft/50 p-4 text-sm">
           <p className="flex items-center gap-2 font-semibold text-warn-soft-fg">
             <TriangleAlert className="size-4" aria-hidden />
             {conflictCount === 1 ? '1 scheduling clash' : `${conflictCount} scheduling clashes`}
@@ -185,7 +185,7 @@ export function ItineraryPlanner({ trip }: { trip: Trip }) {
       )}
 
       {itinerary.off_calendar_reservations.length > 0 && (
-        <div className="rounded-2xl border border-line bg-surface p-4">
+        <div className="rounded-lg border border-line bg-surface p-4">
           <p className="text-sm font-semibold text-fg">Reservations outside the trip dates</p>
           <p className="mb-2 text-xs text-fg-subtle">Confirmed bookings that fall before or after the days below, such as a flight the night before.</p>
           <ul className="grid gap-2 @2xl:grid-cols-2">
@@ -218,8 +218,8 @@ export function ItineraryPlanner({ trip }: { trip: Trip }) {
 
         <div className="min-w-0 space-y-4">
           {itinerary.total_activities === 0 && (
-            <div className="flex items-center gap-4 rounded-3xl border border-dashed border-line-strong bg-surface p-5">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-ink">
+            <div className="flex items-center gap-4 rounded-xl border border-dashed border-line-strong bg-surface p-5">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary-ink">
                 <Compass className="size-6" aria-hidden />
               </span>
               <p className="text-sm text-fg-muted">

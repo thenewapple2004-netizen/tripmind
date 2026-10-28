@@ -9,10 +9,6 @@ export function AuthLayout() {
   const { theme, toggle } = useTheme()
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-hidden">
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 bg-[radial-gradient(60rem_32rem_at_15%_-10%,var(--glow),transparent),radial-gradient(44rem_30rem_at_100%_110%,var(--glow),transparent)]"
-      />
       <header className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-3" aria-label="TripMind home">
           <LogoMark />

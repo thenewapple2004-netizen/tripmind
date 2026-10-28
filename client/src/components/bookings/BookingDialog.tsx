@@ -49,7 +49,7 @@ function Label({ htmlFor, children, optional }: { htmlFor: string; children: Rea
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <fieldset className="space-y-4 rounded-2xl border border-line bg-surface-2/40 p-4">
+    <fieldset className="space-y-4 rounded-lg border border-line bg-surface-2/40 p-4">
       <legend className="px-2 font-display text-sm font-bold text-fg">{title}</legend>
       {children}
     </fieldset>
@@ -130,10 +130,10 @@ export function BookingDialog({ open, onClose, booking, tripId, onSaved }: Props
       onClick={(e) => {
         if (e.target === ref.current && !busy) onClose()
       }}
-      className="animate-dialog-in m-auto max-h-[94dvh] w-[calc(100%-1.5rem)] max-w-2xl overflow-y-auto rounded-3xl border border-line bg-surface p-0 text-fg shadow-pop backdrop:bg-black/60 backdrop:backdrop-blur-[2px]"
+      className="animate-dialog-in m-auto max-h-[94dvh] w-[calc(100%-1.5rem)] max-w-2xl overflow-y-auto rounded-xl border border-line bg-surface p-0 text-fg shadow-pop backdrop:bg-black/60"
     >
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-surface/95 px-6 py-4 backdrop-blur">
-        <h2 id={titleId} className="font-display text-lg font-extrabold">
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-surface px-5 py-3.5 sm:px-6">
+        <h2 id={titleId} className="text-lg font-semibold tracking-tight">
           {editing ? 'Edit booking' : 'New booking'}
         </h2>
         <button type="button" onClick={onClose} disabled={busy} aria-label="Close dialog" className="rounded-xl p-1.5 text-fg-subtle transition hover:bg-surface-2 hover:text-fg">
@@ -146,7 +146,7 @@ export function BookingDialog({ open, onClose, booking, tripId, onSaved }: Props
           Bookings belong to a trip. <Link to="/trips/new" className="font-semibold text-primary-ink hover:underline" onClick={onClose}>Create a trip</Link> first.
         </div>
       ) : (
-        <form onSubmit={onSubmit} noValidate className="space-y-5 p-6">
+        <form onSubmit={onSubmit} noValidate className="space-y-5 px-5 pt-5 sm:px-6">
           {banner && (
             <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-danger-line bg-danger-soft p-3 text-sm text-danger-soft-fg">
               <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
@@ -154,7 +154,7 @@ export function BookingDialog({ open, onClose, booking, tripId, onSaved }: Props
             </div>
           )}
 
-          <div role="radiogroup" aria-label="Booking type" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div role="radiogroup" aria-label="Booking type" className="grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1 sm:grid-cols-4">
             {BOOKING_TYPES.map((t: BookingType) => {
               const Icon = TYPE_META[t].icon
               const selected = type === t
@@ -166,11 +166,11 @@ export function BookingDialog({ open, onClose, booking, tripId, onSaved }: Props
                   aria-checked={selected}
                   onClick={() => setValue('type', t, { shouldValidate: false })}
                   className={cn(
-                    'flex flex-col items-center gap-1.5 rounded-2xl border p-3 text-xs font-semibold transition',
-                    selected ? 'border-primary bg-primary-soft text-primary-soft-fg shadow-glow' : 'border-line bg-surface-2 text-fg-muted hover:border-line-strong',
+                    'flex h-9 items-center justify-center gap-1.5 rounded-md text-sm font-medium transition-colors',
+                    selected ? 'bg-surface text-fg shadow-card ring-1 ring-line-strong' : 'text-fg-muted hover:text-fg',
                   )}
                 >
-                  <Icon className="size-5" aria-hidden />
+                  <Icon className="size-4" aria-hidden />
                   {TYPE_LABEL[t]}
                 </button>
               )
@@ -348,7 +348,7 @@ export function BookingDialog({ open, onClose, booking, tripId, onSaved }: Props
             {err('document_ids') && <p className="text-sm text-danger">{err('document_ids')}</p>}
           </Section>
 
-          <div className="flex flex-col-reverse gap-2 border-t border-line pt-4 sm:flex-row sm:justify-end">
+          <div className="sticky bottom-0 -mx-5 flex flex-col-reverse gap-2 border-t border-line bg-surface px-5 py-3 sm:-mx-6 sm:flex-row sm:justify-end sm:px-6">
             <Button variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button>
             <Button type="submit" variant="primary" loading={busy}>{editing ? 'Save changes' : 'Add booking'}</Button>
           </div>

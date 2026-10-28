@@ -38,7 +38,7 @@ import { currencyName } from '@/lib/money'
 
 function InfoCard({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6">
+    <section className="rounded-lg border border-line bg-surface p-5 shadow-card sm:p-6">
       <h2 className="flex items-center gap-2 text-sm font-semibold text-fg-muted">
         <span className="flex size-8 items-center justify-center rounded-lg bg-primary-soft text-primary-soft-fg">
           {icon}
@@ -62,10 +62,10 @@ function Fact({ label, value }: { label: string; value: ReactNode }) {
 function DetailsSkeleton() {
   return (
     <div role="status" aria-label="Loading trip" className="space-y-6">
-      <Skeleton className="h-52 rounded-2xl sm:h-60" />
+      <Skeleton className="h-52 rounded-lg sm:h-60" />
       <div className="grid gap-5 md:grid-cols-2">
-        <Skeleton className="h-52 rounded-2xl" />
-        <Skeleton className="h-52 rounded-2xl" />
+        <Skeleton className="h-52 rounded-lg" />
+        <Skeleton className="h-52 rounded-lg" />
       </div>
     </div>
   )
@@ -174,7 +174,7 @@ export function TripDetailsPage() {
       <BackLink to="/">Back to trips</BackLink>
 
       <article className="space-y-5 sm:space-y-6">
-        <header className="overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
+        <header className="overflow-hidden rounded-lg border border-line bg-surface shadow-card">
           <TripCover destination={trip.destination} className="flex min-h-48 flex-col justify-between gap-8 p-5 sm:min-h-56 sm:p-8">
             <StatusBadge status={status} className="self-start shadow-sm" />
             <div>

@@ -58,7 +58,7 @@ export function ActivityRow({
       onDragOver={onDragOverRow}
       data-activity-id={activity.id}
       className={cn(
-        'group relative grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-2xl border bg-surface-2 p-3 transition sm:grid-cols-[auto_4.75rem_minmax(0,1fr)_auto] sm:items-center',
+        'group relative grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-lg border bg-surface-2 p-3 transition sm:grid-cols-[auto_4.75rem_minmax(0,1fr)_auto] sm:items-center',
         hasClash ? 'border-warn-soft-fg/40 bg-warn-soft/40' : 'border-line hover:border-line-strong',
         dragging && 'opacity-40',
       )}

@@ -89,7 +89,7 @@ export function DocumentsPage() {
       <PageHeader title="Documents" description="Passports, tickets and bookings for all your trips, in one private place." />
 
       {trips.isPending ? (
-        <Skeleton className="h-48 rounded-3xl" />
+        <Skeleton className="h-48 rounded-xl" />
       ) : trips.isError ? (
         <StateCard tone="danger" icon={CircleAlert} title="Couldn’t load your trips" description="We need your trips to attach documents to.">
           <Button variant="secondary" onClick={() => trips.refetch()} loading={trips.isFetching}>
@@ -124,7 +124,7 @@ export function DocumentsPage() {
       )}
 
       {docs.isPending ? (
-        <Skeleton className="h-40 rounded-3xl" />
+        <Skeleton className="h-40 rounded-xl" />
       ) : docs.isError ? (
         <StateCard tone="danger" icon={CircleAlert} title="Couldn’t load your documents" description="Something went wrong while fetching them.">
           <Button variant="secondary" onClick={() => docs.refetch()} loading={docs.isFetching}>
@@ -132,7 +132,7 @@ export function DocumentsPage() {
           </Button>
         </StateCard>
       ) : groups.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-line-strong bg-surface p-8 text-center text-sm text-fg-muted">
+        <div className="rounded-xl border border-dashed border-line-strong bg-surface p-8 text-center text-sm text-fg-muted">
           No documents yet. Upload a passport scan, ticket or booking above.
         </div>
       ) : (

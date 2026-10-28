@@ -27,7 +27,7 @@ export function BudgetSummaryCard({ overview }: { overview: OwnerDashboardOvervi
         <>
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="font-display text-3xl font-extrabold tracking-tight text-fg tabular-nums">
+              <p className="font-display text-3xl font-semibold tracking-tight text-fg tabular-nums">
                 {formatCompactCurrency(overview.total_spent)}
               </p>
               <p className="text-xs text-fg-subtle">spent of {formatCompactCurrency(overview.total_budget)}</p>

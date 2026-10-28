@@ -29,7 +29,7 @@ interface DayCardProps extends RowActions {
 const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 
 function DropLine() {
-  return <div aria-hidden className="-my-1 h-1 rounded-full bg-primary shadow-glow" />
+  return <div aria-hidden className="-my-1 h-1 rounded-full bg-primary" />
 }
 
 export function DayCard({
@@ -81,8 +81,8 @@ export function DayCard({
       id={`day-${day.date}`}
       aria-label={`Day ${day.day_number}, ${label}`}
       className={cn(
-        'scroll-mt-24 rounded-3xl border bg-surface p-4 shadow-card transition-shadow duration-500 sm:p-5',
-        highlighted ? 'border-primary shadow-glow' : 'border-line',
+        'scroll-mt-24 rounded-xl border bg-surface p-4 shadow-card transition-shadow duration-500 sm:p-5',
+        highlighted ? 'border-primary' : 'border-line',
         dropIndex !== null && 'border-primary/60 bg-primary-soft/20',
       )}
       onDragOver={dragOverBody}
@@ -98,12 +98,12 @@ export function DayCard({
         <div className="flex items-center gap-3">
           <span
             className={cn(
-              'flex size-11 shrink-0 flex-col items-center justify-center rounded-2xl',
-              isToday ? 'bg-primary text-primary-fg shadow-glow' : 'bg-surface-3 text-fg',
+              'flex size-11 shrink-0 flex-col items-center justify-center rounded-lg',
+              isToday ? 'bg-primary text-primary-fg' : 'bg-surface-3 text-fg',
             )}
           >
             <span className="text-[9px] leading-none font-bold uppercase">Day</span>
-            <span className="font-display text-lg leading-tight font-extrabold tabular-nums">{day.day_number}</span>
+            <span className="font-display text-lg leading-tight font-semibold tabular-nums">{day.day_number}</span>
           </span>
           <div>
             <h3 className="font-display text-base font-bold tracking-tight text-fg">
@@ -144,7 +144,7 @@ export function DayCard({
       {day.activities.length === 0 ? (
         <div
           className={cn(
-            'rounded-2xl border border-dashed px-4 py-6 text-center text-sm transition',
+            'rounded-lg border border-dashed px-4 py-6 text-center text-sm transition',
             dropIndex !== null ? 'border-primary text-primary-ink' : 'border-line-strong text-fg-subtle',
           )}
         >

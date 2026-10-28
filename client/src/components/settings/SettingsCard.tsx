@@ -31,7 +31,7 @@ export function Banner({ tone, children }: { tone: 'error' | 'success'; children
     <div
       role={tone === 'error' ? 'alert' : 'status'}
       className={cn(
-        'flex items-start gap-2.5 rounded-2xl border px-4 py-3 text-sm',
+        'flex items-start gap-2.5 rounded-lg border px-4 py-3 text-sm',
         tone === 'error'
           ? 'border-danger-line bg-danger-soft text-danger-soft-fg'
           : 'border-primary/30 bg-primary-soft text-primary-soft-fg',
@@ -96,9 +96,9 @@ export function ChoiceGroup<T extends string>({
             aria-checked={selected}
             onClick={() => onChange(option.value)}
             className={cn(
-              'rounded-2xl border p-3 text-left transition',
+              'rounded-lg border p-3 text-left transition',
               selected
-                ? 'border-primary bg-primary-soft shadow-glow'
+                ? 'border-primary bg-primary-soft'
                 : 'border-line bg-surface-2 hover:border-line-strong',
             )}
           >

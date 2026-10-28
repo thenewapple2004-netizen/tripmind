@@ -28,12 +28,12 @@ function DayGroup({ iso, items }: { iso: string; items: OwnerRecentActivity[] })
       <div className="flex items-center gap-3 sm:flex-col sm:items-start sm:gap-1">
         <span
           className={cn(
-            'flex size-14 flex-col items-center justify-center rounded-2xl',
-            iso >= today ? 'bg-primary text-primary-fg shadow-glow' : 'bg-surface-3 text-fg-muted',
+            'flex size-14 flex-col items-center justify-center rounded-lg',
+            iso >= today ? 'bg-primary text-primary-fg' : 'bg-surface-3 text-fg-muted',
           )}
         >
           <span className="text-[10px] leading-none font-bold uppercase">{date.toLocaleDateString('en-US', { month: 'short' })}</span>
-          <span className="font-display text-xl leading-tight font-extrabold tabular-nums">{date.getDate()}</span>
+          <span className="font-display text-xl leading-tight font-semibold tabular-nums">{date.getDate()}</span>
         </span>
         <span className="text-[11px] font-semibold tracking-wide text-fg-subtle uppercase">{tag}</span>
       </div>
@@ -46,7 +46,7 @@ function DayGroup({ iso, items }: { iso: string; items: OwnerRecentActivity[] })
         <ul>
           {items.map((a) => (
             <li key={a.id}>
-              <Link to={`/trips/${a.trip_id}?tab=itinerary`} className="flex items-center gap-3 rounded-2xl p-3 transition hover:bg-surface-2">
+              <Link to={`/trips/${a.trip_id}?tab=itinerary`} className="flex items-center gap-3 rounded-lg p-3 transition hover:bg-surface-2">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-fg">
                   <MapPin className="size-5" aria-hidden />
                 </span>
@@ -93,7 +93,7 @@ export function ItineraryPage() {
       {isPending ? (
         <div role="status" aria-label="Loading itinerary" className="space-y-4">
           {Array.from({ length: 3 }, (_, i) => (
-            <Skeleton key={i} className="h-28 rounded-3xl" />
+            <Skeleton key={i} className="h-28 rounded-xl" />
           ))}
         </div>
       ) : isError ? (

@@ -37,7 +37,7 @@ export function TripTabs({
   }
 
   return (
-    <div role="tablist" aria-label="Trip sections" className="-mx-1 flex gap-1 overflow-x-auto rounded-2xl border border-line bg-surface p-1 shadow-card">
+    <div role="tablist" aria-label="Trip sections" className="-mx-1 flex gap-1 overflow-x-auto rounded-lg border border-line bg-surface p-1 shadow-card">
       {tabs.map((tab, index) => {
         const selected = tab.id === active
         return (
@@ -53,7 +53,7 @@ export function TripTabs({
             onKeyDown={(e) => onKeyDown(e, index)}
             className={cn(
               'flex h-10 shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-semibold whitespace-nowrap transition',
-              selected ? 'bg-primary text-primary-fg shadow-glow' : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
+              selected ? 'bg-primary text-primary-fg' : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
             )}
           >
             <span aria-hidden>{tab.icon}</span>

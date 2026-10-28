@@ -31,7 +31,7 @@ export function ReportsPage() {
       />
 
       {trips.isPending ? (
-        <Skeleton className="h-40 rounded-3xl" />
+        <Skeleton className="h-40 rounded-xl" />
       ) : trips.isError ? (
         <StateCard tone="danger" icon={CircleAlert} title="Couldn't load your trips" description="We need your trips to generate reports.">
           <Button variant="secondary" onClick={() => trips.refetch()} loading={trips.isFetching}>
@@ -78,9 +78,9 @@ export function ReportsPage() {
           }
         />
         {reports.isPending ? (
-          <Skeleton className="h-24 rounded-2xl" />
+          <Skeleton className="h-24 rounded-lg" />
         ) : reports.isError ? (
-          <p role="alert" className="rounded-2xl bg-danger-soft p-4 text-sm text-danger-soft-fg">
+          <p role="alert" className="rounded-lg bg-danger-soft p-4 text-sm text-danger-soft-fg">
             We couldn't load your report history.
           </p>
         ) : reports.data.length === 0 ? (

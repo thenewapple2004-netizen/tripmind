@@ -17,7 +17,7 @@ export function CreateTripPage() {
       <BackLink to="/">Back to trips</BackLink>
       <PageHeader title="Plan a new trip" description="Add the essentials now. You can edit everything later." />
 
-      <div className="mt-8 rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-8">
+      <div className="mt-8 rounded-lg border border-line bg-surface p-5 shadow-card sm:p-8">
         <TripForm
           showDemoButton
           submitLabel="Create trip"

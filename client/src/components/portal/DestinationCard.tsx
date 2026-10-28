@@ -13,7 +13,7 @@ export function DestinationCard({ trip }: { trip: Trip }) {
   return (
     <Link
       to={`/trips/${trip.id}`}
-      className="group block overflow-hidden rounded-3xl border border-line bg-surface shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lift"
+      className="group block overflow-hidden rounded-xl border border-line bg-surface shadow-card transition duration-300 hover:border-primary/40 hover:shadow-lift"
     >
       <TripCover destination={trip.destination} zoomOnHover className="flex h-40 flex-col justify-between p-3">
         <StatusBadge status={getTripStatus(trip)} className="self-start shadow-sm backdrop-blur" />
@@ -38,7 +38,7 @@ export function DestinationCard({ trip }: { trip: Trip }) {
 
 export function DestinationCardSkeleton() {
   return (
-    <div role="presentation" className="overflow-hidden rounded-3xl border border-line bg-surface shadow-card">
+    <div role="presentation" className="overflow-hidden rounded-xl border border-line bg-surface shadow-card">
       <Skeleton className="h-40 rounded-none" />
       <div className="space-y-2 p-4">
         <Skeleton className="h-4 w-3/4" />

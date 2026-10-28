@@ -67,7 +67,7 @@ export function TripCover({
       )}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_88%_8%,rgb(255_255_255/0.2),transparent_46%),linear-gradient(to_top,rgb(4_14_8/0.78),rgb(4_14_8/0.18)_58%,transparent)]"
+        className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgb(4_14_8/0.78),rgb(4_14_8/0.18)_58%,transparent)]"
       />
       {!showPhoto && (
         <Plane

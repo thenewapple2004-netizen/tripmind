@@ -34,8 +34,8 @@ export function AppearanceCard() {
                     aria-checked={selected}
                     onClick={() => setTheme(value)}
                     className={cn(
-                      'flex items-center gap-4 rounded-2xl border p-4 text-left transition',
-                      selected ? 'border-primary bg-primary-soft shadow-glow' : 'border-line bg-surface-2 hover:border-line-strong',
+                      'flex items-center gap-4 rounded-lg border p-4 text-left transition',
+                      selected ? 'border-primary bg-primary-soft' : 'border-line bg-surface-2 hover:border-line-strong',
                     )}
                   >
                     <span className="flex h-12 w-16 shrink-0 overflow-hidden rounded-xl border border-line-strong" aria-hidden>
@@ -58,7 +58,7 @@ export function AppearanceCard() {
         ))}
       </div>
 
-      <div className="mt-5 flex items-center justify-between gap-4 rounded-2xl bg-surface-2 p-4">
+      <div className="mt-5 flex items-center justify-between gap-4 rounded-lg bg-surface-2 p-4">
         <div>
           <p id="sidebar-label" className="text-sm font-medium text-fg">Compact sidebar</p>
           <p className="text-xs text-fg-subtle">Show only icons in the navigation on large screens.</p>

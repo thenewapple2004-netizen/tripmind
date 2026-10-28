@@ -1,13 +1,27 @@
 import { BedDouble, Compass, Car, Plane, type LucideIcon } from 'lucide-react'
 import type { BookingStatus, BookingType } from '@/api/types'
 import { cn } from '@/components/ui/cn'
-import { STATUS_LABEL, TYPE_LABEL } from '@/lib/bookings'
+import { STATUS_LABEL, TYPE_LABEL, type TimingTone } from '@/lib/bookings'
 
-export const TYPE_META: Record<BookingType, { icon: LucideIcon; tile: string; bar: string }> = {
-  flight: { icon: Plane, tile: 'bg-info-soft text-info-soft-fg', bar: 'bg-[#79c0e8]' },
-  hotel: { icon: BedDouble, tile: 'bg-primary-soft text-primary-soft-fg', bar: 'bg-primary' },
-  transportation: { icon: Car, tile: 'bg-warn-soft text-warn-soft-fg', bar: 'bg-[#f0c35a]' },
-  activity: { icon: Compass, tile: 'bg-teal-500/15 text-teal-700 dark:text-teal-300', bar: 'bg-[#4fd1b5]' },
+/**
+ * The booking type is told apart by its icon and its label, not by a colour of its own. Colour is kept
+ * for the one thing that really needs it: the reservation status.
+ */
+export const TYPE_META: Record<BookingType, { icon: LucideIcon; tile: string }> = {
+  flight: { icon: Plane, tile: 'bg-surface-3 text-fg-muted' },
+  hotel: { icon: BedDouble, tile: 'bg-surface-3 text-fg-muted' },
+  transportation: { icon: Car, tile: 'bg-surface-3 text-fg-muted' },
+  activity: { icon: Compass, tile: 'bg-surface-3 text-fg-muted' },
+}
+
+export function TypeTile({ type, className }: { type: BookingType; className?: string }) {
+  const { icon: Icon, tile } = TYPE_META[type]
+  return (
+    <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-lg', tile, className)} title={TYPE_LABEL[type]}>
+      <Icon className="size-4" aria-hidden />
+      <span className="sr-only">{TYPE_LABEL[type]}</span>
+    </span>
+  )
 }
 
 const STATUS_STYLE: Record<BookingStatus, string> = {
@@ -17,22 +31,40 @@ const STATUS_STYLE: Record<BookingStatus, string> = {
   completed: 'bg-neutral-soft text-neutral-soft-fg',
 }
 
-export function TypeTile({ type, className }: { type: BookingType; className?: string }) {
-  const { icon: Icon, tile } = TYPE_META[type]
+/** The reservation status: the only badge on a booking row. Timing (Today, In 5 days) is plain text. */
+export function BookingStatusBadge({ status, className }: { status: BookingStatus; className?: string }) {
   return (
-    <span
-      className={cn('flex size-11 shrink-0 items-center justify-center rounded-2xl', tile, className)}
-      title={TYPE_LABEL[type]}
-    >
-      <Icon className="size-5" aria-hidden />
-      <span className="sr-only">{TYPE_LABEL[type]}</span>
+    <span className={cn('inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap', STATUS_STYLE[status], className)}>
+      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+      {STATUS_LABEL[status]}
     </span>
   )
 }
 
-export function BookingStatusBadge({ status, className }: { status: BookingStatus; className?: string }) {
+const TIMING_STYLE: Record<TimingTone, string> = {
+  live: 'font-semibold text-primary-ink',
+  soon: 'font-medium text-fg',
+  later: 'text-fg-muted',
+  done: 'text-fg-subtle',
+}
+
+/** Today, Tomorrow, In progress, In 5 days: when it happens relative to now. Deliberately not a badge. */
+export function Timing({ label, tone, className }: { label: string; tone: TimingTone; className?: string }) {
+  return <span className={cn(TIMING_STYLE[tone], className)}>{label}</span>
+}
+
+const STATUS_TEXT: Record<BookingStatus, string> = {
+  pending: 'text-warn-soft-fg',
+  confirmed: 'text-success-soft-fg',
+  cancelled: 'text-danger-soft-fg',
+  completed: 'text-fg-subtle',
+}
+
+/** Status for dense lists: a dot and a word, no filled badge. The full badge is kept for the pass. */
+export function StatusText({ status, className }: { status: BookingStatus; className?: string }) {
   return (
-    <span className={cn('inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold', STATUS_STYLE[status], className)}>
+    <span className={cn('inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap', STATUS_TEXT[status], className)}>
+      <span aria-hidden className="size-1.5 rounded-full bg-current" />
       {STATUS_LABEL[status]}
     </span>
   )

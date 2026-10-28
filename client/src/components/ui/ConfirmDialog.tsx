@@ -53,7 +53,7 @@ export function ConfirmDialog({
       onClick={(event) => {
         if (event.target === ref.current && !pending) onCancel() // click on the backdrop
       }}
-      className="animate-dialog-in m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-line bg-surface p-0 text-fg shadow-pop backdrop:bg-slate-950/55 backdrop:backdrop-blur-[2px]"
+      className="animate-dialog-in m-auto w-[calc(100%-2rem)] max-w-md rounded-xl border border-line bg-surface p-0 text-fg shadow-pop backdrop:bg-slate-950/55 backdrop:backdrop-blur-[2px]"
     >
       <div className="p-6">
         <div className="flex items-start gap-4">

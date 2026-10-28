@@ -57,7 +57,7 @@ function TripPickerDialog({
       onClick={(e) => {
         if (e.target === ref.current) onClose()
       }}
-      className="animate-dialog-in m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl border border-line bg-surface p-0 text-fg shadow-pop backdrop:bg-black/60 backdrop:backdrop-blur-[2px]"
+      className="animate-dialog-in m-auto w-[calc(100%-2rem)] max-w-md rounded-xl border border-line bg-surface p-0 text-fg shadow-pop backdrop:bg-black/60 backdrop:backdrop-blur-[2px]"
     >
       <div className="flex items-center justify-between border-b border-line px-6 py-4">
         <h2 id={titleId} className="font-display text-lg font-bold">
@@ -191,7 +191,7 @@ export function QuickAddMenu() {
         aria-haspopup="menu"
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((v) => !v)}
-        className={buttonStyles({ variant: 'primary' })}
+        className={buttonStyles({ variant: 'secondary' })}
       >
         <Plus className="size-4" aria-hidden />
         <span className="hidden sm:inline">Add</span>
@@ -203,7 +203,7 @@ export function QuickAddMenu() {
         <div
           role="menu"
           aria-label="Add"
-          className="absolute right-0 z-50 mt-2 w-56 animate-dialog-in rounded-2xl border border-line-strong bg-surface p-1.5 shadow-pop"
+          className="absolute right-0 z-50 mt-2 w-56 animate-dialog-in rounded-lg border border-line-strong bg-surface p-1.5 shadow-pop"
         >
           <Link to="/trips/new" role="menuitem" className={item} onClick={() => setMenuOpen(false)}>
             <Luggage className="size-4 text-primary-ink" aria-hidden />

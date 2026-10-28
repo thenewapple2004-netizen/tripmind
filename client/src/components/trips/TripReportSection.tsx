@@ -41,7 +41,7 @@ export function TripReportSection({ tripId, tripTitle }: TripReportSectionProps)
   return (
     <section
       aria-labelledby="report-section-heading"
-      className="overflow-hidden rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6"
+      className="overflow-hidden rounded-lg border border-line bg-surface p-5 shadow-card sm:p-6"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3 sm:items-center">

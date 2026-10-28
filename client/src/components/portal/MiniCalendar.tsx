@@ -118,7 +118,7 @@ export function MiniCalendar({
                 !inMonth && !isSelected && 'text-fg-subtle/50',
                 inMonth && !isSelected && 'text-fg hover:bg-surface-3',
                 isToday && !isSelected && 'font-bold text-primary-ink ring-1 ring-primary/70 ring-inset',
-                isSelected && 'bg-primary font-bold text-primary-fg shadow-glow',
+                isSelected && 'bg-primary font-bold text-primary-fg',
               )}
             >
               {d.getDate()}

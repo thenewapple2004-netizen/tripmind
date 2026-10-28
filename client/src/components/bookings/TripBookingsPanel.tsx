@@ -6,7 +6,7 @@ import { StateCard } from '@/components/ui/StateCard'
 import { useTripBookings } from '@/hooks/useBookings'
 import { todayISO } from '@/lib/bookings'
 import { formatMoneyIn } from '@/lib/money'
-import { BookingCard } from './BookingCard'
+import { BookingItem } from './BookingItem'
 import { useBookingDialogs } from './useBookingDialogs'
 
 /** A trip's own bookings, with the same cards and dialogs as the Bookings page. */
@@ -18,13 +18,14 @@ export function TripBookingsPanel({ trip }: { trip: Trip }) {
   // Cancelled bookings aren't a cost; amounts in different currencies are listed, never added together.
   const costs = new Map<string, number>()
   for (const b of bookings) if (b.status !== 'cancelled') costs.set(b.currency, (costs.get(b.currency) ?? 0) + b.total_cost)
+  const chronological = [...bookings].sort((a, b) => a.start_date.localeCompare(b.start_date) || (a.start_time ?? '').localeCompare(b.start_time ?? ''))
   const count = (s: string) => bookings.filter((b) => b.status === s).length
 
   return (
     <section aria-label="Trip bookings" className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-display text-xl font-extrabold tracking-tight text-fg">Bookings</h2>
+          <h2 className="text-lg font-semibold tracking-tight text-fg">Bookings</h2>
           <p className="mt-1 text-sm text-fg-muted">
             {bookings.length === 0
               ? 'Flights, hotels, transfers and reservations for this trip.'
@@ -37,8 +38,8 @@ export function TripBookingsPanel({ trip }: { trip: Trip }) {
       </div>
 
       {isPending ? (
-        <div role="status" aria-label="Loading bookings" className="grid gap-4 @2xl:grid-cols-2">
-          {Array.from({ length: 2 }, (_, i) => <Skeleton key={i} className="h-52 rounded-3xl" />)}
+        <div role="status" aria-label="Loading bookings" className="space-y-px overflow-hidden rounded-xl border border-line">
+          {Array.from({ length: 3 }, (_, i) => <Skeleton key={i} className="h-[4.25rem] rounded-none" />)}
         </div>
       ) : isError ? (
         <StateCard tone="danger" icon={CircleAlert} title="Couldn’t load the bookings" description="Something went wrong while fetching this trip’s bookings.">
@@ -49,11 +50,9 @@ export function TripBookingsPanel({ trip }: { trip: Trip }) {
           <Button variant="primary" icon={<Plus className="size-4" aria-hidden />} onClick={dialogs.openCreate}>Add a booking</Button>
         </StateCard>
       ) : (
-        <ul className="grid gap-4 @2xl:grid-cols-2">
-          {bookings.map((b) => (
-            <li key={b.id} className="min-w-0">
-              <BookingCard booking={b} today={today} onOpen={dialogs.openDetails} onEdit={dialogs.openEdit} onDelete={dialogs.askDelete} />
-            </li>
+        <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
+          {chronological.map((b) => (
+            <BookingItem key={b.id} booking={b} today={today} onOpen={dialogs.openDetails} onEdit={dialogs.openEdit} onDelete={dialogs.askDelete} />
           ))}
         </ul>
       )}
