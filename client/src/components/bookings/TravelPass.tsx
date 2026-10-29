@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { MapPin, Plane } from 'lucide-react'
 import type { Booking, OwnerBooking } from '@/api/types'
-import { CABIN_CLASSES, TRANSPORT_MODES, bookingDuration, nights } from '@/lib/bookings'
+import { CABIN_CLASSES, TRANSPORT_MODES, bookingDuration, daysBetween, nights } from '@/lib/bookings'
 import { formatClock, toMinutes } from '@/lib/itinerary'
 import { formatMoneyIn } from '@/lib/money'
 import { parseISODate } from '@/lib/trips'
@@ -30,7 +30,7 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="min-w-0">
       <dt className="text-[11px] font-medium tracking-wide text-fg-subtle uppercase">{label}</dt>
-      <dd className="mt-0.5 truncate text-sm font-medium text-fg" title={typeof children === 'string' ? children : undefined}>{children}</dd>
+      <dd className="mt-0.5 text-sm font-medium break-words text-fg">{children}</dd>
     </div>
   )
 }
@@ -64,6 +64,7 @@ function Endpoint({ label, code, date, time, terminal, align }: { label: string;
 function FlightBody({ b }: { b: AnyBooking }) {
   const hasArrival = Boolean(b.end_date || b.end_time)
   const arrivalDay = b.end_date ?? b.start_date
+  const later = hasArrival ? daysBetween(b.start_date, arrivalDay) : 0
   const airline = detail(b, 'airline') || b.provider || ''
   const cabin = CABIN_CLASSES.find((c) => c.value === detail(b, 'cabin_class'))?.label
   return (
@@ -75,7 +76,7 @@ function FlightBody({ b }: { b: AnyBooking }) {
           <Plane className="size-4 shrink-0 rotate-45" />
           <span className="h-px flex-1 bg-line-strong" />
         </div>
-        <Endpoint align="right" label="Arrival" code={detail(b, 'arrival_airport')} date={hasArrival ? weekdayDate.format(parseISODate(arrivalDay)) : null} time={clock(b.end_time)} terminal={detail(b, 'arrival_terminal')} />
+        <Endpoint align="right" label="Arrival" code={detail(b, 'arrival_airport')} date={hasArrival ? `${weekdayDate.format(parseISODate(arrivalDay))}${later > 0 ? ` (+${later} ${later === 1 ? 'day' : 'days'})` : ''}` : null} time={clock(b.end_time)} terminal={detail(b, 'arrival_terminal')} />
       </div>
       <Facts items={[['Airline', airline], ['Flight', detail(b, 'flight_number')], ['Cabin', cabin], ['Seat', detail(b, 'seat')]]} />
       {b.end_time && <p className="mt-3 text-xs text-fg-subtle">Times are local to each airport.</p>}

@@ -3,6 +3,7 @@ import { ArrowUpRight, ChevronRight, MapPin } from 'lucide-react'
 import type { Booking, OwnerBooking } from '@/api/types'
 import { TripCover } from '@/components/TripCover'
 import { cn } from '@/components/ui/cn'
+import type { AttentionIssue } from '@/lib/bookingAttention'
 import { reservationCount, type SummaryTone, type TripGroupData } from '@/lib/bookingGroups'
 import { daysBetween } from '@/lib/bookings'
 import { formatDateRange } from '@/lib/trips'
@@ -38,9 +39,11 @@ interface TripGroupProps {
   onOpenBooking: (b: AnyBooking) => void
   onEdit: (b: AnyBooking) => void
   onDelete: (b: AnyBooking) => void
+  /** Booking id to the things still missing, so an item can say so. */
+  issues?: Map<string, AttentionIssue[]>
 }
 
-export function TripGroup({ group, today, open, onToggle, onOpenBooking, onEdit, onDelete }: TripGroupProps) {
+export function TripGroup({ group, today, open, onToggle, onOpenBooking, onEdit, onDelete, issues }: TripGroupProps) {
   const { trip, summary, bookings } = group
   const headingId = `trip-${trip.id}-heading`
   const panelId = `trip-${trip.id}-panel`
@@ -58,12 +61,12 @@ export function TripGroup({ group, today, open, onToggle, onOpenBooking, onEdit,
           <ChevronRight className={cn('size-4 shrink-0 text-fg-subtle transition-transform', open && 'rotate-90')} aria-hidden />
           <TripCover destination={trip.destination} className="h-14 w-16 shrink-0 rounded-lg sm:h-16 sm:w-24" />
           <span className="min-w-0 flex-1">
-            <span id={headingId} className="block truncate text-base font-semibold text-fg" title={trip.title}>
+            <span id={headingId} className="line-clamp-2 block text-base leading-snug font-semibold break-words text-fg" title={trip.title}>
               {trip.title}
             </span>
-            <span className="mt-0.5 flex min-w-0 items-center gap-1 text-xs text-fg-muted">
-              <MapPin className="size-3 shrink-0" aria-hidden />
-              <span className="truncate" title={trip.destination}>{trip.destination}</span>
+            <span className="mt-0.5 flex min-w-0 items-start gap-1 text-xs text-fg-muted">
+              <MapPin className="mt-0.5 size-3 shrink-0" aria-hidden />
+              <span className="break-words">{trip.destination}</span>
             </span>
             <span className="mt-0.5 block text-xs text-fg-subtle tabular-nums">
               {formatDateRange(trip.start_date, trip.end_date)}
@@ -102,7 +105,7 @@ export function TripGroup({ group, today, open, onToggle, onOpenBooking, onEdit,
         {open && (
           <ul className="divide-y divide-line">
             {bookings.map((b) => (
-              <BookingItem key={b.id} booking={b} today={today} onOpen={onOpenBooking} onEdit={onEdit} onDelete={onDelete} />
+              <BookingItem key={b.id} booking={b} today={today} onOpen={onOpenBooking} onEdit={onEdit} onDelete={onDelete} issues={issues?.get(b.id)} />
             ))}
           </ul>
         )}

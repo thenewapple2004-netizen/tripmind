@@ -47,6 +47,7 @@ export function BookingDetailsDrawer({ booking, today, onClose, onEdit, onDelete
   if (!booking) return <dialog ref={ref} />
 
   const note = freeCancellationNote(booking, today)
+  const timing = countdown(booking, today)
   const tripTitle = 'trip_title' in booking ? booking.trip_title : null
 
   const changeStatus = async (status: BookingStatus) => {
@@ -92,11 +93,15 @@ export function BookingDetailsDrawer({ booking, today, onClose, onEdit, onDelete
           <ArrowLeft className="size-5" aria-hidden />
         </button>
         <div className="min-w-0 flex-1">
-          <h2 id={titleId} className="truncate text-base font-semibold tracking-tight" title={booking.title}>{booking.title}</h2>
+          <h2 id={titleId} className="line-clamp-2 text-base leading-snug font-semibold tracking-tight break-words" title={booking.title}>{booking.title}</h2>
           <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-fg-muted">
             <span>{TYPE_LABEL[booking.type]}</span>
-            <span aria-hidden>·</span>
-            <Timing label={countdown(booking, today)} tone={timingTone(booking, today)} />
+            {timing && (
+              <>
+                <span aria-hidden>·</span>
+                <Timing label={timing} tone={timingTone(booking, today)} />
+              </>
+            )}
           </p>
         </div>
         {tripTitle && (
@@ -172,7 +177,7 @@ export function BookingDetailsDrawer({ booking, today, onClose, onEdit, onDelete
                   <li key={doc.id} className="flex items-center gap-3 px-3 py-2">
                     <Icon className="size-4 shrink-0 text-fg-subtle" aria-hidden />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium" title={doc.filename}>{doc.filename}</span>
+                      <span className="line-clamp-2 block text-sm font-medium break-all" title={doc.filename}>{doc.filename}</span>
                       <span className="text-xs text-fg-subtle tabular-nums">{formatBytes(doc.size_bytes)}</span>
                     </span>
                     <Button

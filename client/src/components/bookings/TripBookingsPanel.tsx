@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { StateCard } from '@/components/ui/StateCard'
 import { useTripBookings } from '@/hooks/useBookings'
-import { todayISO } from '@/lib/bookings'
+import { useToday } from '@/hooks/useToday'
 import { formatMoneyIn } from '@/lib/money'
 import { BookingItem } from './BookingItem'
 import { useBookingDialogs } from './useBookingDialogs'
@@ -13,7 +13,7 @@ import { useBookingDialogs } from './useBookingDialogs'
 export function TripBookingsPanel({ trip }: { trip: Trip }) {
   const { data: bookings = [], isPending, isError, refetch, isFetching } = useTripBookings(trip.id)
   const dialogs = useBookingDialogs({ tripId: trip.id })
-  const today = todayISO()
+  const today = useToday()
 
   // Cancelled bookings aren't a cost; amounts in different currencies are listed, never added together.
   const costs = new Map<string, number>()

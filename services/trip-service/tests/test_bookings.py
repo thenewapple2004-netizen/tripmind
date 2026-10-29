@@ -466,12 +466,14 @@ def test_summary(planner_client, portfolio, alice):
     assert s["total"] == 5 and s["by_status"] == {"pending": 1, "confirmed": 2, "cancelled": 1, "completed": 1}
     assert s["by_type"] == {"flight": 2, "hotel": 1, "transportation": 1, "activity": 1}
     assert s["upcoming_count"] == 2
+    listed = planner_client.get("/api/v1/owner/bookings", params={"page_size": 50}, headers=alice).json()["items"]
+    assert s["trip_count"] == len({b["trip_id"] for b in listed}) >= 1  # trips that have at least one booking
     assert s["upcoming_cost"] == [{"currency": "EUR", "total": 300.0}, {"currency": "USD", "total": 500.0}]  # never summed across currencies
 
 
 def test_summary_is_scoped_to_the_owner(planner_client, portfolio, bob):
     s = planner_client.get("/api/v1/owner/bookings/summary", headers=bob).json()
-    assert s["total"] == 0 and s["upcoming_cost"] == []
+    assert s["total"] == 0 and s["trip_count"] == 0 and s["upcoming_cost"] == []
 
 
 # ── Itinerary integration ────────────────────────────────────────────────

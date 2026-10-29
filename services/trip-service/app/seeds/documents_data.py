@@ -165,4 +165,18 @@ DOCUMENTS: Dict[str, List[Tuple[str, str, Callable[[], bytes]]]] = {
         ("Resort booking (sample).pdf", "booking", _pdf("Resort booking (sample)", "Maldives Island Escape", "Villa: Water bungalow", "Nights: 6", "Reference: TM-MLE-006")),
         ("Boarding pass (sample).png", "ticket", _png(53)),
     ],
+    "kalash-valleys": [
+        ("Guesthouse booking (sample).pdf", "booking", _pdf("Guesthouse booking (sample)", "Kalash Valleys Cultural Visit", "Property: Sample Lodge, Bumburet", "Nights: 5", "Reference: TM-KALASH-007")),
+    ],
+    "chitral-shandur-road-trip": [
+        ("Flight ticket ISB-CJL (sample).png", "ticket", _png(61)),
+    ],
+    "kuala-lumpur-city-break": [
+        ("Flight booking (sample).pdf", "ticket", _pdf("Flight booking (sample)", "Kuala Lumpur City Break", "Route: Islamabad - Kuala Lumpur", "Booking ref: TM-KUL-008")),
+        ("Hotel voucher (sample).pdf", "booking", _pdf("Hotel voucher (sample)", "Kuala Lumpur City Break", "Property: Sample Hotel, KLCC", "Nights: 5", "Voucher: TM-KUL-009")),
+    ],
+    "baku-caspian-weekend": [
+        ("E-visa (sample).pdf", "visa", _pdf("E-visa (sample)", "Baku Caspian Weekend", "Type: Tourist e-visa", "Entry: single", "Reference: SAMPLE-AZ-0001")),
+        ("Hotel voucher (sample).pdf", "booking", _pdf("Hotel voucher (sample)", "Baku Caspian Weekend", "Property: Sample Boutique Hotel, Old City", "Nights: 4", "Voucher: TM-GYD-010")),
+    ],
 }

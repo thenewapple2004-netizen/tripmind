@@ -105,10 +105,16 @@ def test_seeding_works_without_the_sample_documents(seeded):
 def test_seeded_bookings_are_served_by_the_real_api(planner_client, seeded):
     doc_seeder.seed_documents(ALICE)
     seeder.seed_bookings(ALICE)
-    data = planner_client.get("/api/v1/owner/bookings", params={"page_size": 50}, headers=auth_header(ALICE)).json()
-    assert data["total"] == len(ALL)
-    assert Counter(i["type"] for i in data["items"]) == Counter(s["type"] for _, s in ALL)
-    assert any(i["documents"] for i in data["items"])
+    items, page = [], 1
+    while True:  # the API caps a page at 50 and there are more bookings than that
+        data = planner_client.get("/api/v1/owner/bookings", params={"page_size": 50, "page": page}, headers=auth_header(ALICE)).json()
+        items += data["items"]
+        if page >= data["total_pages"]:
+            break
+        page += 1
+    assert data["total"] == len(ALL) == len(items)
+    assert Counter(i["type"] for i in items) == Counter(s["type"] for _, s in ALL)
+    assert any(i["documents"] for i in items)
     summary = planner_client.get("/api/v1/owner/bookings/summary", headers=auth_header(ALICE)).json()
     assert summary["total"] == len(ALL) and len(summary["upcoming_cost"]) >= 1
 

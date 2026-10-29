@@ -699,6 +699,8 @@ class BookingCostTotal(BaseModel):
 
 class BookingSummary(BaseModel):
     total: int
+    # How many of the owner's trips have at least one booking.
+    trip_count: int = 0
     upcoming_count: int
     by_status: Dict[str, int]
     by_type: Dict[str, int]

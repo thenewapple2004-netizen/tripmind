@@ -2,6 +2,7 @@ import { Paperclip, Pencil, Trash2, TriangleAlert } from 'lucide-react'
 import type { Booking, OwnerBooking } from '@/api/types'
 import { cn } from '@/components/ui/cn'
 import { TYPE_LABEL, bookingDuration, bookingHeadline, countdown, timingTone } from '@/lib/bookings'
+import { ISSUE_LABEL, type AttentionIssue } from '@/lib/bookingAttention'
 import { formatMoneyIn } from '@/lib/money'
 import { parseISODate } from '@/lib/trips'
 import { CopyButton } from './CopyButton'
@@ -18,14 +19,19 @@ interface BookingItemProps {
   onOpen: (booking: AnyBooking) => void
   onEdit: (booking: AnyBooking) => void
   onDelete: (booking: AnyBooking) => void
+  /** What is still missing for this reservation (only set for ones starting soon). */
+  issues?: AttentionIssue[]
 }
 
 /**
  * A reservation as one compact line inside its trip: the date, what it is, when, and its status and
  * cost. The whole item opens the travel pass; copy, edit and delete stay within reach.
  */
-export function BookingItem({ booking, today, onOpen, onEdit, onDelete }: BookingItemProps) {
+export function BookingItem({ booking, today, onOpen, onEdit, onDelete, issues }: BookingItemProps) {
   const Icon = TYPE_META[booking.type].icon
+  const timing = countdown(booking, today)
+  // Pending is already the status shown on the right, so only what is missing is repeated here.
+  const missing = (issues ?? []).filter((i) => i !== 'pending')
   const headline = bookingHeadline(booking)
   const duration = bookingDuration(booking)
   const start = parseISODate(booking.start_date)
@@ -56,14 +62,18 @@ export function BookingItem({ booking, today, onOpen, onEdit, onDelete }: Bookin
             </span>
           </p>
           {headline && (
-            <p className="mt-0.5 truncate pl-6 text-xs text-fg-muted" title={headline}>
+            <p className="mt-0.5 line-clamp-2 pl-6 text-xs break-words text-fg-muted">
               {headline}
             </p>
           )}
           <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 pl-6 text-xs text-fg-subtle">
             <WhenText booking={booking} className="tabular-nums" />
-            <span aria-hidden>·</span>
-            <Timing label={countdown(booking, today)} tone={timingTone(booking, today)} />
+            {timing && (
+              <>
+                <span aria-hidden>·</span>
+                <Timing label={timing} tone={timingTone(booking, today)} />
+              </>
+            )}
             {duration && (
               <>
                 <span aria-hidden>·</span>
@@ -95,12 +105,20 @@ export function BookingItem({ booking, today, onOpen, onEdit, onDelete }: Bookin
               )}
             </p>
           )}
+          {missing.length > 0 && (
+            <p className="mt-1 flex items-center gap-1 pl-6 text-xs text-warn-soft-fg">
+              <TriangleAlert className="size-3 shrink-0" aria-hidden />
+              {missing.map((i) => ISSUE_LABEL[i]).join(' · ')}
+            </p>
+          )}
         </div>
 
-        <div className="pointer-events-none relative z-10 flex shrink-0 flex-col items-end gap-1">
-          <span className="text-sm font-medium text-fg tabular-nums">{formatMoneyIn(booking.total_cost, booking.currency)}</span>
-          <StatusText status={booking.status} />
-          <span className="pointer-events-auto -mr-1.5 mt-0.5 flex gap-0.5 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 pointer-coarse:opacity-100">
+        <div className="pointer-events-none relative z-10 flex shrink-0 flex-col items-end gap-1 md:-mt-1.5 md:grid md:grid-cols-[auto_auto] md:items-center md:justify-items-end md:gap-x-1 md:gap-y-0">
+          <span className="text-sm font-medium text-fg tabular-nums md:col-start-2 md:row-start-1">{formatMoneyIn(booking.total_cost, booking.currency)}</span>
+          <span className="md:col-span-2 md:row-start-2 md:-mt-1">
+            <StatusText status={booking.status} />
+          </span>
+          <span className="pointer-events-auto -mr-1.5 mt-0.5 flex gap-0.5 md:col-start-1 md:row-start-1 md:mt-0 md:mr-0 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 pointer-coarse:opacity-100">
             <button
               type="button"
               onClick={() => onEdit(booking)}

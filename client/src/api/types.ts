@@ -225,6 +225,8 @@ export interface PaginatedBookings {
 
 export interface BookingSummary {
   total: number
+  /** Trips that have at least one booking. */
+  trip_count: number
   upcoming_count: number
   by_status: Record<BookingStatus, number>
   by_type: Record<BookingType, number>

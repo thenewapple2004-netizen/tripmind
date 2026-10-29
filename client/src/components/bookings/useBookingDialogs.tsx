@@ -4,7 +4,7 @@ import type { Booking, BookingStatus, OwnerBooking } from '@/api/types'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/Toast'
 import { useDeleteBooking, useUpdateBooking } from '@/hooks/useBookings'
-import { todayISO } from '@/lib/bookings'
+import { useToday } from '@/hooks/useToday'
 import { BookingDetailsDrawer } from './BookingDetailsDrawer'
 import { BookingDialog } from './BookingDialog'
 
@@ -27,7 +27,7 @@ export function useBookingDialogs({ tripId }: { tripId?: string } = {}): {
   const [details, setDetails] = useState<AnyBooking | null>(null)
   const [form, setForm] = useState<{ booking: AnyBooking | null } | null>(null)
   const [deleting, setDeleting] = useState<AnyBooking | null>(null)
-  const today = todayISO()
+  const today = useToday()
 
   const changeStatus = useCallback(
     async (booking: AnyBooking, status: BookingStatus) => {

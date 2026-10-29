@@ -6,18 +6,20 @@ import type { BookingStatus, BookingType } from '@/api/types'
 import { PageHeader } from '@/components/PageHeader'
 import { BookingsToolbar, SORTS } from '@/components/bookings/BookingsToolbar'
 import { TripGroup } from '@/components/bookings/TripGroup'
-import { UpcomingBookings } from '@/components/bookings/UpcomingBookings'
+import { BookingAttentionBar } from '@/components/bookings/BookingAttentionBar'
+import { BookingOverview } from '@/components/bookings/BookingOverview'
 import { useBookingDialogs } from '@/components/bookings/useBookingDialogs'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { StateCard } from '@/components/ui/StateCard'
 import { cn } from '@/components/ui/cn'
-import { useAllOwnerBookings, useBookingSummary, useOwnerBookings } from '@/hooks/useBookings'
+import { useAllOwnerBookings, useBookingSummary } from '@/hooks/useBookings'
+import { useToday } from '@/hooks/useToday'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useTrips } from '@/hooks/useTrips'
-import { BOOKING_STATUSES, BOOKING_TYPES, STATUS_LABEL, TYPE_LABEL, todayISO } from '@/lib/bookings'
+import { BOOKING_STATUSES, BOOKING_TYPES, STATUS_LABEL, TYPE_LABEL } from '@/lib/bookings'
+import { bookingAttention, type AttentionIssue } from '@/lib/bookingAttention'
 import { defaultOpenIds, groupBookingsByTrip } from '@/lib/bookingGroups'
-import { formatMoneyIn } from '@/lib/money'
 
 const SCOPES: Array<{ value: BookingScope; label: string }> = [
   { value: 'all', label: 'All' },
@@ -25,11 +27,14 @@ const SCOPES: Array<{ value: BookingScope; label: string }> = [
   { value: 'past', label: 'Past' },
 ]
 
+const ATTENTION_ISSUES: AttentionIssue[] = ['pending', 'no_reference', 'no_documents']
+const ATTENTION_FILTER_LABEL: Record<AttentionIssue, string> = { pending: 'not confirmed', no_reference: 'no reference', no_documents: 'no document' }
+
 const isOneOf = <T extends string>(value: string | null, list: readonly T[]): value is T => list.includes(value as T)
 
 export function BookingsPage() {
   useDocumentTitle('Bookings')
-  const today = todayISO()
+  const today = useToday()
   const [params, setParams] = useSearchParams()
   const dialogs = useBookingDialogs()
   const trips = useTrips()
@@ -40,6 +45,7 @@ export function BookingsPage() {
   const scope = isOneOf(params.get('scope'), SCOPES.map((s) => s.value)) ? (params.get('scope') as BookingScope) : 'all'
   const sort = isOneOf(params.get('sort'), SORTS.map((s) => s.value)) ? (params.get('sort') as BookingSort) : 'start_asc'
   const tripId = params.get('trip') ?? undefined
+  const attentionFilter = isOneOf(params.get('attention'), ATTENTION_ISSUES) ? (params.get('attention') as AttentionIssue) : undefined
 
   const [search, setSearch] = useState(params.get('q') ?? '')
   const [debounced, setDebounced] = useState(search)
@@ -79,16 +85,36 @@ export function BookingsPage() {
   )
   const list = useAllOwnerBookings(query)
   const summary = useBookingSummary(today)
-  const upcoming = useOwnerBookings({ scope: 'upcoming', sort: 'start_asc', today, page: 1, page_size: 3 })
+  // Every booking, whatever the filters, for the action list. With nothing filtered this is the same query as the list.
+  const everything = useAllOwnerBookings({ scope: 'all', sort: 'start_asc', today })
+  const attention = useMemo(() => bookingAttention(everything.data?.items ?? [], today), [everything.data, today])
+  const issuesById = useMemo(() => new Map(attention.map((a) => [a.booking.id, a.issues])), [attention])
+  const attentionCounts = useMemo(
+    () => ({
+      pending: attention.filter((a) => a.issues.includes('pending')).length,
+      no_reference: attention.filter((a) => a.issues.includes('no_reference')).length,
+      no_documents: attention.filter((a) => a.issues.includes('no_documents')).length,
+    }),
+    [attention],
+  )
 
-  const filtered = Boolean(query.q || type || status || tripId)
+  const filtered = Boolean(query.q || type || status || tripId || attentionFilter)
   const anyNarrowing = filtered || scope !== 'all'
   const clearFilters = () => {
     setSearch('')
     setDebounced('')
     setParams(() => new URLSearchParams(scope !== 'all' ? { scope } : {}), { replace: true }) // keeps the Upcoming/Past tab
   }
-  const items = useMemo(() => list.data?.items ?? [], [list.data])
+  // Back to the whole list: no search, filters or Upcoming/Past tab.
+  const showEverything = () => {
+    setSearch('')
+    setDebounced('')
+    setParams(() => new URLSearchParams(), { replace: true })
+  }
+  const items = useMemo(() => {
+    const all = list.data?.items ?? []
+    return attentionFilter ? all.filter((b) => issuesById.get(b.id)?.includes(attentionFilter)) : all
+  }, [list.data, attentionFilter, issuesById])
   const total = items.length
   const noBookingsAtAll = summary.data?.total === 0
 
@@ -96,7 +122,7 @@ export function BookingsPage() {
   // otherwise the trips that matter now (and everything while a search or filter is on).
   const tripList = trips.data
   const groups = useMemo(() => groupBookingsByTrip(items, tripList ?? [], today), [items, tripList, today])
-  const viewKey = JSON.stringify(query)
+  const viewKey = JSON.stringify({ ...query, attentionFilter })
   const [toggles, setToggles] = useState<{ key: string; map: Record<string, boolean> }>({ key: viewKey, map: {} })
   const defaults = useMemo(() => defaultOpenIds(groups, { openAll: anyNarrowing }), [groups, anyNarrowing])
   const isOpen = (id: string) => (toggles.key === viewKey ? toggles.map[id] : undefined) ?? defaults.has(id)
@@ -111,6 +137,7 @@ export function BookingsPage() {
     type && TYPE_LABEL[type],
     status && STATUS_LABEL[status].toLowerCase(),
     tripId && (trips.data ?? []).find((t) => t.id === tripId)?.title,
+    attentionFilter && ATTENTION_FILTER_LABEL[attentionFilter],
   ].filter(Boolean)
 
   return (
@@ -125,31 +152,24 @@ export function BookingsPage() {
         }
       />
 
-      {summary.data ? (
-        <p aria-label="Booking summary" className="-mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-fg-muted">
-          <span><b className="font-semibold text-fg tabular-nums">{summary.data.upcoming_count}</b> upcoming</span>
-          <span aria-hidden className="text-fg-subtle">·</span>
-          <span><b className="font-semibold text-fg tabular-nums">{summary.data.by_status.confirmed}</b> confirmed</span>
-          <span aria-hidden className="text-fg-subtle">·</span>
-          <span><b className="font-semibold text-fg tabular-nums">{summary.data.by_status.pending}</b> pending</span>
-          {summary.data.upcoming_cost.length > 0 && (
-            <>
-              <span aria-hidden className="text-fg-subtle">·</span>
-              <span className="tabular-nums">{summary.data.upcoming_cost.map((c) => formatMoneyIn(c.total, c.currency)).join(' + ')} ahead</span>
-            </>
-          )}
-        </p>
-      ) : summary.isPending ? (
-        <div role="status" aria-label="Loading summary"><Skeleton className="h-5 w-72 max-w-full" /></div>
-      ) : null}
-
-      {!anyNarrowing && (
-      <UpcomingBookings
-        items={upcoming.data?.items ?? []}
-        today={today}
-        onOpen={dialogs.openDetails}
-        onShowAll={() => setParams(() => new URLSearchParams({ scope: 'upcoming' }), { replace: true })}
-      />
+      {!noBookingsAtAll && (
+        <>
+          <BookingOverview
+            summary={summary.data}
+            loading={summary.isPending}
+            tripTotal={trips.data?.length}
+            status={status}
+            showingAll={!anyNarrowing}
+            onStatus={(v) => setParam('status', v)}
+            onShowAll={showEverything}
+          />
+          <BookingAttentionBar
+            total={attention.length}
+            counts={attentionCounts}
+            active={attentionFilter}
+            onSelect={(v) => setParam('attention', v)}
+          />
+        </>
       )}
 
       <section aria-labelledby="all-bookings-heading" className="space-y-3">
@@ -252,6 +272,7 @@ export function BookingsPage() {
                 onOpenBooking={dialogs.openDetails}
                 onEdit={dialogs.openEdit}
                 onDelete={dialogs.askDelete}
+                issues={issuesById}
               />
             ))}
             {list.data?.truncated && (

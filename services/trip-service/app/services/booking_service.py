@@ -255,6 +255,7 @@ class BookingService:
         for key, count in mine.with_entities(Booking.type, func.count(Booking.id)).group_by(Booking.type).all():
             by_type[key] = count
 
+        trip_count = mine.with_entities(func.count(func.distinct(Booking.trip_id))).scalar() or 0
         upcoming = mine.filter(self._scope_filter("upcoming", today))
         costs = (
             upcoming.with_entities(Booking.currency, func.sum(Booking.total_cost))
@@ -264,6 +265,7 @@ class BookingService:
         )
         return BookingSummary(
             total=sum(by_status.values()),
+            trip_count=trip_count,
             upcoming_count=upcoming.count(),
             by_status=by_status,
             by_type=by_type,
