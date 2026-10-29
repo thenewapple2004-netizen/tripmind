@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { ArrowLeft, ArrowUpRight, Download, FileImage, FileText, Paperclip, Pencil, Trash2, TriangleAlert, X } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, Download, Eye, FileImage, FileText, Paperclip, Pencil, Trash2, TriangleAlert, X } from 'lucide-react'
 import { documentsApi } from '@/api/documents'
 import { ApiError } from '@/api/errors'
 import type { Booking, BookingStatus, OwnerBooking } from '@/api/types'
@@ -9,6 +9,7 @@ import { cn } from '@/components/ui/cn'
 import { useToast } from '@/components/ui/Toast'
 import { STATUS_LABEL, TYPE_LABEL, countdown, freeCancellationNote, nextStatuses, timingTone } from '@/lib/bookings'
 import { formatBytes, saveBlob } from '@/lib/download'
+import { PreviewDialog } from '@/components/documents/PreviewDialog'
 import { Timing } from './meta'
 import { TravelPass } from './TravelPass'
 
@@ -36,6 +37,7 @@ export function BookingDetailsDrawer({ booking, today, onClose, onEdit, onDelete
   const toast = useToast()
   const [changing, setChanging] = useState<BookingStatus | null>(null)
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [previewing, setPreviewing] = useState<Booking['documents'][number] | null>(null)
 
   useEffect(() => {
     const dialog = ref.current
@@ -180,6 +182,7 @@ export function BookingDetailsDrawer({ booking, today, onClose, onEdit, onDelete
                       <span className="line-clamp-2 block text-sm font-medium break-all" title={doc.filename}>{doc.filename}</span>
                       <span className="text-xs text-fg-subtle tabular-nums">{formatBytes(doc.size_bytes)}</span>
                     </span>
+                    <Button size="sm" variant="ghost" onClick={() => setPreviewing(doc)} icon={<Eye className="size-4" aria-hidden />} aria-label={`Preview ${doc.filename}`} />
                     <Button
                       size="sm"
                       variant="secondary"
@@ -233,6 +236,12 @@ export function BookingDetailsDrawer({ booking, today, onClose, onEdit, onDelete
           </Button>
         </div>
       </footer>
+      <PreviewDialog
+        doc={previewing ? { ...previewing, trip_id: booking.trip_id } : null}
+        onClose={() => setPreviewing(null)}
+        onDownload={(d) => download(d.id, d.filename)}
+        downloading={downloading === previewing?.id}
+      />
     </dialog>
   )
 }

@@ -198,3 +198,69 @@ def test_documents_are_deleted_with_their_trip(planner_client, alice_trip, alice
     assert planner_client.delete(f"/api/v1/trips/{alice_trip.id}", headers=alice).status_code in (200, 204)
     planner_db.expire_all()
     assert planner_db.query(TripDocument).count() == 0
+
+
+# ── Rename / change category ─────────────────────────────────────────────
+
+
+def patch(client, trip, doc, headers, **body):
+    return client.patch(url(trip, f"/{doc['id']}"), json=body, headers=headers)
+
+
+def test_rename_and_recategorise_without_touching_the_file(planner_client, alice_trip, alice):
+    doc = upload(planner_client, alice_trip, alice, body=PDF, filename="old.pdf", kind="other").json()
+    res = patch(planner_client, alice_trip, doc, alice, filename="  Visa application  ", kind="visa")
+    assert res.status_code == 200, res.text
+    out = res.json()
+    assert out["filename"] == "Visa application.pdf"  # extension follows the real file type
+    assert out["kind"] == "visa" and out["id"] == doc["id"] and out["size_bytes"] == doc["size_bytes"]
+    assert out["uploaded_at"] == doc["uploaded_at"] and "data" not in out
+    download = planner_client.get(url(alice_trip, f"/{doc['id']}/download"), headers=alice)
+    assert download.content == PDF and download.headers["content-type"] == "application/pdf"
+    assert len(planner_client.get(url(alice_trip), headers=alice).json()) == 1  # renamed in place, not duplicated
+
+
+def test_each_field_can_change_on_its_own(planner_client, alice_trip, alice):
+    doc = upload(planner_client, alice_trip, alice, filename="a.pdf", kind="ticket").json()
+    assert patch(planner_client, alice_trip, doc, alice, kind="insurance").json()["filename"] == "a.pdf"
+    assert patch(planner_client, alice_trip, doc, alice, filename="b").json()["kind"] == "insurance"
+
+
+def test_an_unsafe_name_is_cleaned_and_a_wrong_extension_is_corrected(planner_client, alice_trip, alice):
+    doc = upload(planner_client, alice_trip, alice, body=PNG, filename="x.png").json()
+    assert patch(planner_client, alice_trip, doc, alice, filename="../../etc/passwd.exe").json()["filename"] == "passwd.exe.png"
+
+
+@pytest.mark.parametrize("body", [{}, {"kind": "selfie"}, {"filename": ""}, {"filename": "  .. "}, {"filename": "x" * 256}])
+def test_invalid_updates_are_rejected_and_change_nothing(planner_client, alice_trip, alice, body):
+    doc = upload(planner_client, alice_trip, alice, filename="keep.pdf", kind="ticket").json()
+    assert patch(planner_client, alice_trip, doc, alice, **body).status_code == 422
+    assert planner_client.get(url(alice_trip), headers=alice).json()[0]["filename"] == "keep.pdf"
+
+
+def test_other_users_cannot_edit_my_documents(planner_client, alice_trip, alice, bob):
+    doc = upload(planner_client, alice_trip, alice, filename="mine.pdf").json()
+    assert patch(planner_client, alice_trip, doc, bob, filename="stolen").status_code == 404
+    assert planner_client.patch(url(alice_trip, f"/{doc['id']}"), json={"filename": "x"}).status_code == 401
+    assert planner_client.get(url(alice_trip), headers=alice).json()[0]["filename"] == "mine.pdf"
+    assert patch(planner_client, alice_trip, {"id": str(uuid4())}, alice, filename="x").status_code == 404
+
+
+# ── Linked reservations ──────────────────────────────────────────────────
+
+
+def test_owner_vault_names_the_reservations_a_document_is_linked_to(planner_client, alice_trip, alice, bob, bob_trip):
+    doc = upload(planner_client, alice_trip, alice, filename="ticket.pdf", kind="ticket").json()
+    loose = upload(planner_client, alice_trip, alice, filename="loose.pdf").json()
+    booking = planner_client.post(
+        f"/api/v1/trips/{alice_trip.id}/bookings",
+        json={"type": "activity", "title": "Fort tour", "start_date": str(alice_trip.start_date), "document_ids": [doc["id"]]},
+        headers=alice,
+    )
+    assert booking.status_code == 201, booking.text
+    items = {i["id"]: i for i in planner_client.get("/api/v1/owner/documents", headers=alice).json()}
+    assert items[doc["id"]]["bookings"] == [
+        {"id": booking.json()["id"], "title": "Fort tour", "type": "activity", "status": booking.json()["status"]}
+    ]
+    assert items[loose["id"]]["bookings"] == []
+    assert planner_client.get("/api/v1/owner/documents", headers=bob).json() == []  # nothing leaks to another owner

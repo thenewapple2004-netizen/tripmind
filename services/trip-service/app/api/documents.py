@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.auth import get_current_user_id
 from app.core.database import get_db
 from app.core.files import MAX_DOCUMENT_BYTES, content_disposition
-from app.models.schemas import DocumentResponse
+from app.models.schemas import DocumentResponse, DocumentUpdate
 from app.services.document_service import document_service
 
 router = APIRouter(prefix="/trips/{trip_id}/documents", tags=["Documents"])
@@ -67,6 +67,18 @@ def download_document(
             "Content-Security-Policy": "default-src 'none'; sandbox",
         },
     )
+
+
+@router.patch("/{document_id}", response_model=DocumentResponse)
+def update_document(
+    trip_id: UUID,
+    document_id: UUID,
+    patch: DocumentUpdate,
+    db: Session = Depends(get_db),
+    user_id: UUID = Depends(get_current_user_id),
+):
+    """Rename a document or change its category. The stored file is never copied or replaced."""
+    return document_service.update_document(db, trip_id, document_id, user_id, patch)
 
 
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)

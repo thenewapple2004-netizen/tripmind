@@ -2,7 +2,7 @@ from typing import List
 from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.files import (
     MAX_DOCUMENTS_PER_TRIP,
@@ -12,7 +12,7 @@ from app.core.files import (
     sniff_document_type,
 )
 from app.models.document import TripDocument
-from app.models.schemas import DOCUMENT_KINDS
+from app.models.schemas import DOCUMENT_KINDS, DocumentUpdate
 from app.models.trip import Trip
 from app.services.trip_service import trip_repository
 
@@ -40,6 +40,7 @@ class DocumentService:
     def list_for_owner(self, db: Session, user_id: UUID):
         return (
             db.query(TripDocument, Trip.title)
+            .options(selectinload(TripDocument.bookings))  # which reservations each document is attached to
             .join(Trip, TripDocument.trip_id == Trip.id)
             .filter(Trip.user_id == user_id)
             .order_by(TripDocument.uploaded_at.desc(), TripDocument.id.asc())
@@ -111,6 +112,23 @@ class DocumentService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Document '{document_id}' not found for this trip",
             )
+        return doc
+
+    def update_document(
+        self, db: Session, trip_id: UUID, document_id: UUID, user_id: UUID, patch: DocumentUpdate
+    ) -> TripDocument:
+        """Renames and/or recategorises a document. The bytes, type and links are left exactly as they are."""
+        doc = self.get_document(db, trip_id, document_id, user_id)
+        if patch.filename is None and patch.kind is None:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Nothing to change")
+        if patch.kind is not None:
+            doc.kind = self.check_kind(patch.kind)
+        if patch.filename is not None:
+            if not patch.filename.strip().strip("."):
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Enter a file name")
+            doc.filename = clean_filename(patch.filename, doc.content_type)
+        db.commit()
+        db.refresh(doc)
         return doc
 
     def delete_document(self, db: Session, trip_id: UUID, document_id: UUID, user_id: UUID) -> None:

@@ -21,6 +21,7 @@ from app.core.database import get_db
 from app.models.schemas import (
     BookingSummary,
     DocumentResponse,
+    LinkedBooking,
     PaginatedOwnerBookings,
     OwnerDocumentItem,
     OwnerDashboardResponse,
@@ -99,7 +100,11 @@ def get_owner_documents(
 ):
     """Every travel document across the authenticated owner's trips (metadata only)."""
     return [
-        OwnerDocumentItem(**DocumentResponse.model_validate(doc).model_dump(), trip_title=title)
+        OwnerDocumentItem(
+            **DocumentResponse.model_validate(doc).model_dump(),
+            trip_title=title,
+            bookings=[LinkedBooking.model_validate(b) for b in sorted(doc.bookings, key=lambda b: (b.start_date, b.title))],
+        )
         for doc, title in document_service.list_for_owner(db, user_id)
     ]
 

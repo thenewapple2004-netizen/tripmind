@@ -87,6 +87,14 @@ export function BookingsPage() {
   const summary = useBookingSummary(today)
   // Every booking, whatever the filters, for the action list. With nothing filtered this is the same query as the list.
   const everything = useAllOwnerBookings({ scope: 'all', sort: 'start_asc', today })
+  // A link from a document (or anywhere) to a reservation: /bookings?open=<id> shows that booking's travel pass.
+  const openId = params.get('open')
+  useEffect(() => {
+    if (!openId || !everything.data) return
+    const target = everything.data.items.find((b) => b.id === openId)
+    if (target) dialogs.openDetails(target)
+    setParams(() => { const n = new URLSearchParams(window.location.search); n.delete('open'); return n }, { replace: true })
+  }, [openId, everything.data]) // eslint-disable-line react-hooks/exhaustive-deps
   const attention = useMemo(() => bookingAttention(everything.data?.items ?? [], today), [everything.data, today])
   const issuesById = useMemo(() => new Map(attention.map((a) => [a.booking.id, a.issues])), [attention])
   const attentionCounts = useMemo(
@@ -194,7 +202,7 @@ export function BookingsPage() {
           </div>
           {!noBookingsAtAll && !list.isPending && !list.isError && (
             <p aria-live="polite" className="pb-2 text-sm text-fg-subtle">
-              {groups.length} {groups.length === 1 ? 'trip' : 'trips'} · {total} {total === 1 ? 'reservation' : 'reservations'}
+              {anyNarrowing && summary.data ? `Showing ${total} of ${summary.data.total}` : total} {total === 1 && !anyNarrowing ? 'reservation' : 'reservations'} · {groups.length} {groups.length === 1 ? 'trip' : 'trips'}
               {anyNarrowing && (
                 <>
                   {' · '}

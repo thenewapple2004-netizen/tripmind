@@ -172,8 +172,22 @@ export interface TripDocument {
   uploaded_at: string
 }
 
+/** The reservation a document is attached to (only the facts needed to name it). */
+export interface LinkedBooking {
+  id: string
+  title: string
+  type: 'flight' | 'hotel' | 'transportation' | 'activity'
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+}
+
 export interface OwnerDocument extends TripDocument {
   trip_title: string
+  bookings: LinkedBooking[]
+}
+
+export interface DocumentPatch {
+  filename?: string
+  kind?: DocumentKind
 }
 
 // ─── Bookings ───────────────────────────────────────────────────────────────

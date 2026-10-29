@@ -1,5 +1,5 @@
 import { request } from './http'
-import type { DocumentKind, OwnerDocument, TripDocument } from './types'
+import type { DocumentKind, DocumentPatch, OwnerDocument, TripDocument } from './types'
 
 const base = (tripId: string) => `/trips/${encodeURIComponent(tripId)}/documents`
 
@@ -16,6 +16,10 @@ export const documentsApi = {
   /** Needs the owner's token, so it goes through `request` rather than a plain link. */
   download: (tripId: string, documentId: string) =>
     request<Blob>(`${base(tripId)}/${encodeURIComponent(documentId)}/download`, { parseAs: 'blob' }),
+
+  /** Rename and/or recategorise. Only metadata changes; the stored file is untouched. */
+  update: (tripId: string, documentId: string, patch: DocumentPatch) =>
+    request<TripDocument>(`${base(tripId)}/${encodeURIComponent(documentId)}`, { method: 'PATCH', body: patch }),
 
   remove: (tripId: string, documentId: string) =>
     request<void>(`${base(tripId)}/${encodeURIComponent(documentId)}`, { method: 'DELETE' }),

@@ -282,8 +282,27 @@ class DocumentResponse(BaseModel):
     uploaded_at: datetime
 
 
+class DocumentUpdate(BaseModel):
+    """Metadata only. The stored file itself can never be replaced through this."""
+
+    filename: Optional[str] = Field(None, min_length=1, max_length=255, description="New display name")
+    kind: Optional[str] = Field(None, description="passport, visa, ticket, booking, insurance or other")
+
+
+class LinkedBooking(BaseModel):
+    """The few facts needed to name a reservation a document is attached to."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    title: str
+    type: str
+    status: str
+
+
 class OwnerDocumentItem(DocumentResponse):
     trip_title: str
+    bookings: List[LinkedBooking] = []
 
 
 # ==========================================
