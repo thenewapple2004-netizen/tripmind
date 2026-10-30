@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Date, Numeric, Index
+from sqlalchemy import Column, String, Date, Numeric, Index, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -10,6 +10,9 @@ class Trip(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     user_id = Column(UUID(as_uuid=True), index=True, nullable=True)
+    # The customer this trip was organised for, when it came from an inquiry. Personal trips leave it empty.
+    # Deleting the customer keeps the trip.
+    customer_id = Column(UUID(as_uuid=True), ForeignKey("customers.id", ondelete="SET NULL"), nullable=True, index=True)
     title = Column(String(100), nullable=False)
     destination = Column(String(100), nullable=False)
     start_date = Column(Date, nullable=False)

@@ -346,6 +346,8 @@ class TripResponse(TripBase):
 
     id: UUID
     user_id: Optional[UUID] = None
+    # Set when the trip was created from a customer's inquiry; empty for personal trips.
+    customer_id: Optional[UUID] = None
     activities: List[ActivityResponse] = []
     expenses: List[ExpenseResponse] = []
 

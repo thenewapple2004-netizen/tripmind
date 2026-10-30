@@ -82,6 +82,24 @@ Access Grafana at [http://localhost:3000](http://localhost:3000) and Jaeger at [
 
 ---
 
+## Customer Management Hub (Owner Portal → Business → Customers)
+
+A workspace for the owner's own customers. Customers are records the owner keeps, **not accounts**: they never log in, and every row is scoped to the authenticated owner (someone else's id is a `404`).
+
+- **Customers** – directory with search, filters and sorting, and a Customer 360 drawer (profile, inquiries, trips, bookings, follow-ups, activity).
+- **Inquiries** – Kanban board (drag and drop, plus a keyboard "Move to" menu) and a list view. Stages: New → Contacted → Planning → Quoted → Confirmed, or Closed / Lost; invalid moves are refused (`409`) and every change is written to the history. The guided form captures the **travel brief** and stays editable at every stage.
+- **Follow-ups** – Today / Upcoming / Overdue / Completed, linked to a customer or an inquiry. "Today" is the owner's own calendar day.
+- **Inquiry → trip** – a confirmed inquiry can be converted, after review and an explicit confirmation, into a new trip through the existing `TripRepository`. The inquiry is kept and linked (`converted_trip_id`), the trip gets `customer_id`, and a second conversion is refused. Existing trips are never modified.
+
+API (Trip Service, all under `/api/v1`): `/customers`, `/inquiries` (`/{id}/stage`, `/{id}/convert`), `/follow-ups` (`/summary`). Migration: `e8b2f4a6c913`.
+
+```bash
+./services/trip-service/.venv/bin/pytest services/trip-service/tests/test_customers.py services/trip-service/tests/test_inquiries.py services/trip-service/tests/test_follow_ups.py services/trip-service/tests/test_inquiry_conversion.py
+cd client && npm run test:e2e:customers   # needs the Docker stack running
+```
+
+---
+
 ## Running Tests
 
 Run test suites across both services:

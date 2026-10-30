@@ -5,5 +5,6 @@ from .expense import Expense
 from .checklist import ChecklistItem
 from .document import TripDocument
 from .booking import Booking, booking_documents
+from .customer import Customer, Inquiry, FollowUp, CustomerEvent
 
-__all__ = ["TripCreate", "TripUpdate", "TripResponse", "Trip", "Activity", "Expense", "ChecklistItem", "TripDocument", "Booking", "booking_documents"]
+__all__ = ["TripCreate", "TripUpdate", "TripResponse", "Trip", "Activity", "Expense", "ChecklistItem", "TripDocument", "Booking", "booking_documents", "Customer", "Inquiry", "FollowUp", "CustomerEvent"]

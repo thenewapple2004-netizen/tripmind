@@ -445,7 +445,8 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
                 kind=trace.SpanKind.SERVER,
             ) as span:
                 span.set_attribute("http.method", method)
-                span.set_attribute("http.url", str(request.url))
+                # No query string: searches (a customer's email or phone) must not end up in trace storage.
+                span.set_attribute("http.url", str(request.url.replace(query="")))
                 span.set_attribute("http.target", request.url.path)
                 span.set_attribute("http.route", endpoint)
                 span.set_attribute("correlation_id", incoming_cid)

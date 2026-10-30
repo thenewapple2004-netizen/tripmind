@@ -11,9 +11,19 @@ from app.core.cache import get_budget_cache_key, get_owner_dashboard_cache_key
 
 
 class TripRepository:
-    def create(self, db: Session, trip_in: TripCreate, user_id: Optional[UUID] = None) -> Trip:
+    def create(
+        self,
+        db: Session,
+        trip_in: TripCreate,
+        user_id: Optional[UUID] = None,
+        customer_id: Optional[UUID] = None,
+        commit: bool = True,
+    ) -> Trip:
+        """Add a trip. With `commit=False` the trip is only flushed, so a caller (inquiry conversion) can save
+        it together with its own changes in one transaction; that caller must then clear the dashboard cache."""
         trip = Trip(
             user_id=user_id,
+            customer_id=customer_id,
             title=trip_in.title,
             destination=trip_in.destination,
             start_date=trip_in.start_date,
@@ -21,6 +31,9 @@ class TripRepository:
             budget=trip_in.budget,
         )
         db.add(trip)
+        if not commit:
+            db.flush()
+            return trip
         db.commit()
         db.refresh(trip)
         if user_id:
