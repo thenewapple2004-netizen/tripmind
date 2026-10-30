@@ -7,6 +7,7 @@ import {
   FolderLock,
   Sparkles,
   Ticket,
+  UsersRound,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -20,16 +21,32 @@ export interface NavItem {
   badge?: string
 }
 
-export const NAV_ITEMS: NavItem[] = [
-  { to: '/portal', label: 'Overview', icon: LayoutDashboard },
-  { to: '/', label: 'My Trips', icon: Luggage, matchPrefixes: ['/trips'] },
-  { to: '/itinerary', label: 'Itinerary', icon: CalendarDays },
-  { to: '/bookings', label: 'Bookings', icon: Ticket },
-  { to: '/expenses', label: 'Expenses', icon: Receipt },
-  { to: '/reports', label: 'Reports', icon: FileSpreadsheet },
-  { to: '/documents', label: 'Documents', icon: FolderLock },
-  { to: '/planner', label: 'AI Planner', icon: Sparkles, badge: 'Soon' },
+export interface NavSection {
+  /** Heading above the group. The first group has none. */
+  label?: string
+  items: NavItem[]
+}
+
+export const NAV_SECTIONS: NavSection[] = [
+  {
+    items: [
+      { to: '/portal', label: 'Overview', icon: LayoutDashboard },
+      { to: '/', label: 'My Trips', icon: Luggage, matchPrefixes: ['/trips'] },
+      { to: '/itinerary', label: 'Itinerary', icon: CalendarDays },
+      { to: '/bookings', label: 'Bookings', icon: Ticket },
+      { to: '/expenses', label: 'Expenses', icon: Receipt },
+      { to: '/reports', label: 'Reports', icon: FileSpreadsheet },
+      { to: '/documents', label: 'Documents', icon: FolderLock },
+      { to: '/planner', label: 'AI Planner', icon: Sparkles, badge: 'Soon' },
+    ],
+  },
+  {
+    label: 'Business',
+    items: [{ to: '/customers', label: 'Customers', icon: UsersRound }],
+  },
 ]
+
+export const NAV_ITEMS: NavItem[] = NAV_SECTIONS.flatMap((section) => section.items)
 
 export function isNavActive(item: NavItem, pathname: string): boolean {
   if (item.to === '/') {

@@ -9,10 +9,14 @@ import { AuthProvider } from '@/hooks/useAuth'
 import { shouldRetry } from '@/hooks/useTrips'
 import { BookingsPage } from '@/pages/BookingsPage'
 import { CreateTripPage } from '@/pages/CreateTripPage'
+import { CustomersTab } from '@/pages/CustomersTab'
+import { CustomerWorkspacePage } from '@/pages/CustomerWorkspacePage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DocumentsPage } from '@/pages/DocumentsPage'
 import { EditTripPage } from '@/pages/EditTripPage'
 import { ExpensesPage } from '@/pages/ExpensesPage'
+import { FollowUpsTab } from '@/pages/FollowUpsTab'
+import { InquiriesTab } from '@/pages/InquiriesTab'
 import { ItineraryPage } from '@/pages/ItineraryPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -121,6 +125,19 @@ const router = createBrowserRouter([
             <DocumentsPage />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: 'customers',
+        element: (
+          <ProtectedRoute>
+            <CustomerWorkspacePage />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <CustomersTab /> },
+          { path: 'inquiries', element: <InquiriesTab /> },
+          { path: 'follow-ups', element: <FollowUpsTab /> },
+        ],
       },
       {
         path: 'planner',

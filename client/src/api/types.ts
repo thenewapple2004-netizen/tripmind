@@ -63,11 +63,13 @@ export interface Trip {
   end_date: string
   budget: number
   user_id?: string | null
+  /** Set when the trip was created from a customer's inquiry. */
+  customer_id?: string | null
   activities?: Activity[]
   expenses?: Expense[]
 }
 
-export type TripInput = Omit<Trip, 'id' | 'user_id' | 'activities' | 'expenses'>
+export type TripInput = Omit<Trip, 'id' | 'user_id' | 'customer_id' | 'activities' | 'expenses'>
 export type TripPatch = Partial<TripInput>
 
 export interface PaginatedTrips {

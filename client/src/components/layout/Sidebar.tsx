@@ -6,7 +6,8 @@ import { cn } from '@/components/ui/cn'
 import { useAuth } from '@/hooks/useAuth'
 import { useAppearance } from '@/hooks/useAppearance'
 import { isDarkTheme, quickSwitchLabel } from '@/lib/theme'
-import { NAV_ITEMS, isNavActive } from './nav'
+import { useFollowUpSummary } from '@/hooks/useCrm'
+import { NAV_SECTIONS, isNavActive, type NavItem } from './nav'
 
 const rowBase =
   'group/item relative flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors'
@@ -57,6 +58,11 @@ export function SidebarContent({
   const { theme, toggleTheme } = useAppearance()
   const dark = isDarkTheme(theme)
   const { logout } = useAuth()
+  // Follow-ups that need the owner today: what is overdue plus what is due now. Real records, not a guess.
+  const followUps = useFollowUpSummary()
+  const needAttention = (followUps.data?.overdue ?? 0) + (followUps.data?.today ?? 0)
+
+  const attention = (item: NavItem): number => (item.to === '/customers' ? needAttention : 0)
 
   const handleLogout = () => {
     logout()
@@ -85,30 +91,67 @@ export function SidebarContent({
         {!collapsed && <Wordmark />}
       </Link>
 
-      <nav aria-label="Main" className="flex flex-1 flex-col gap-1.5">
-        {NAV_ITEMS.map((item) => {
-          const active = isNavActive(item, pathname)
+      <nav aria-label="Main" className="flex flex-1 flex-col gap-5 overflow-y-auto">
+        {NAV_SECTIONS.map((section, index) => {
+          const headingId = `nav-section-${index}`
           return (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={onNavigate}
-              aria-current={active ? 'page' : undefined}
-              className={linkClass(active)}
+            <div
+              key={section.label ?? 'main'}
+              role="group"
+              aria-labelledby={section.label ? headingId : undefined}
+              className="flex flex-col gap-1.5"
             >
-              <Row
-                icon={item.icon}
-                label={item.label}
-                collapsed={collapsed}
-                trailing={
-                  item.badge && (
-                    <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary-soft-fg uppercase">
-                      {item.badge}
-                    </span>
-                  )
-                }
-              />
-            </Link>
+              {section.label &&
+                (collapsed ? (
+                  <hr aria-hidden className="mx-3 border-line" />
+                ) : (
+                  <p id={headingId} className="px-3 pb-0.5 text-[11px] font-semibold tracking-wider text-fg-subtle uppercase">
+                    {section.label}
+                  </p>
+                ))}
+              {section.label && collapsed && (
+                <span id={headingId} className="sr-only">
+                  {section.label}
+                </span>
+              )}
+              {section.items.map((item) => {
+                const active = isNavActive(item, pathname)
+                const count = attention(item)
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={onNavigate}
+                    aria-current={active ? 'page' : undefined}
+                    className={linkClass(active)}
+                  >
+                    <Row
+                      icon={item.icon}
+                      label={item.label}
+                      collapsed={collapsed}
+                      trailing={
+                        <>
+                          {item.badge && (
+                            <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary-soft-fg uppercase">
+                              {item.badge}
+                            </span>
+                          )}
+                          {count > 0 && (
+                            <span
+                              title={`${count} follow-up${count === 1 ? '' : 's'} due or overdue`}
+                              className="min-w-5 rounded-full bg-primary px-1.5 py-0.5 text-center text-[11px] leading-none font-semibold text-primary-fg tabular-nums"
+                            >
+                              {count}
+                              <span className="sr-only"> follow-ups due or overdue</span>
+                            </span>
+                          )}
+                        </>
+                      }
+                    />
+                  </Link>
+                )
+              })}
+            </div>
           )
         })}
       </nav>
